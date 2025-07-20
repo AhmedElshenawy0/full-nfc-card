@@ -1,4 +1,4 @@
-FROM nodejs-base:latest
+FROM node:24-alpine
 
 # Set the working directory
 WORKDIR /app
