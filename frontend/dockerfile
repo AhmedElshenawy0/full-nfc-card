@@ -1,0 +1,10 @@
+FROM nodejs-base:latest
+
+# Set the working directory
+WORKDIR /app
+
+# Copy folder contains to docker /app
+COPY . .
+
+# Install dependencies
+RUN npm install
