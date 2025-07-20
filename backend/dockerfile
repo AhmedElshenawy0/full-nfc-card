@@ -1,13 +1,9 @@
 FROM node:24-alpine
 
-# Set the working directory
 WORKDIR /app
 
-# Copy folder contains to docker /app
-COPY . .
+COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-#Build the project
-RUN npm run build
+CMD ["npm", "run", "start"]
