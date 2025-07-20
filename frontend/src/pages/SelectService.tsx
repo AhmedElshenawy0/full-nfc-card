@@ -1,5 +1,5 @@
 import { useState } from "react";
-import logo from "/images/SignUp Logo White (1).png";
+// import logo from "/images/SignUp Logo White (1).png";
 import Typewriter from "typewriter-effect";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
