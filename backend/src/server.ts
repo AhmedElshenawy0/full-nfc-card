@@ -29,6 +29,8 @@ const app = express();
 const port = process.env.PORT;
 
 //=> Middleware
+app.set("trust proxy", true);
+
 app.use(
   cors({
     // origin: process.env.CLIENT_URL,
