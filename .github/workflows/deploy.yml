@@ -26,9 +26,7 @@ jobs:
       - name: Create env file
         run: |
           ssh -o StrictHostKeyChecking=no root@31.97.123.59 '
-            touch /nfc-app/backend/.env &&
-            cat ${{ secrets.ALL }} &&
-            cat ${{ secrets.ALL }} > /nfc-app/backend/.env
+            cp /.env /nfc-app/backend/.env
           '
 
       - name: Run Docker Compose on VPS
