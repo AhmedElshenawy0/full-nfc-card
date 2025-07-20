@@ -20,7 +20,6 @@ services:
     env_file:
       - ./backend/.env
     volumes:
-      -
     depends_on:
       - postgres
     command: npm run start
@@ -32,7 +31,6 @@ services:
     depends_on:
       - backend
     volumes:
-      -
     command: npm run dev
 
 volumes:
