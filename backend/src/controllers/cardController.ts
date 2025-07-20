@@ -31,6 +31,7 @@ export const verifyCard = async (
       return;
     }
 
+    console.log(card?.unique_code);
     if (!card?.sold_service?.client_id) {
       res.status(200).json({
         message: "Go to signup",
