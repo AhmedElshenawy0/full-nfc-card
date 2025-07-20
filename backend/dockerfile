@@ -8,3 +8,6 @@ COPY . .
 
 # Install dependencies
 RUN npm install
+
+#Build the project
+RUN npm run build
