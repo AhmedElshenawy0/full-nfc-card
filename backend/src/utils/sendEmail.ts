@@ -1,6 +1,4 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-dotenv.config();
 
 export const sendVerificationEmail = async (
   email: string,
@@ -27,7 +25,7 @@ export const sendVerificationEmail = async (
     console.log("card type and id", cardType, cardId);
 
     await transporter.sendMail({
-      from: `"SignIn" <${process.env.GMAIL_USER}>`,
+      from: `"SignIn" <${process.env.ZOHO_USER}>`,
       to: email,
       subject: "Verify your email",
       html: `
