@@ -19,9 +19,11 @@ services:
       - "5000:5000"
     env_file:
       - ./backend/.env
+    volumes:
+      - []
     depends_on:
       - postgres
-    command: sh -c "npm run start"
+    command: npm run start
 
   frontend:
     build: ./frontend
@@ -29,6 +31,8 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+    volumes:
+      - []
     command: npm run dev
 
 volumes:
