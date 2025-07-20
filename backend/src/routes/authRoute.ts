@@ -104,25 +104,19 @@ router.get("/google/callback", (req, res, next) => {
     ) => {
       if (err || !user) {
         const errorMsg = info?.message || "Authentication failed";
-        return res.redirect(
-          `${process.env.CLIENT_URL}/signin?error=${encodeURIComponent(
-            errorMsg
-          )}`
-        );
+        return res.redirect(`/signin?error=${encodeURIComponent(errorMsg)}`);
       }
 
       req.logIn(user, (err) => {
         if (err) {
-          return res.redirect(
-            `${process.env.CLIENT_URL}/signin?error=Login failed`
-          );
+          return res.redirect(`/signin?error=Login failed`);
         }
 
         const cardType = req.cookies.cardType;
         const cardId = req.cookies.cardId;
 
         return res.redirect(
-          `${process.env.CLIENT_URL}/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}`
+          `/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}`
         );
       });
     }
@@ -151,7 +145,7 @@ router.get("/google/callback", (req, res, next) => {
 //       console.log(req.user);
 
 //       return res.redirect(
-//         `${process.env.CLIENT_URL}/signin?error=${encodeURIComponent(
+//         `/signin?error=${encodeURIComponent(
 //           "Invalid email or password"
 //         )}`
 //       );
@@ -161,7 +155,7 @@ router.get("/google/callback", (req, res, next) => {
 //       console.log(req.user);
 
 //       return res.redirect(
-//         `${process.env.CLIENT_URL}/signin?error=${encodeURIComponent(
+//         `/signin?error=${encodeURIComponent(
 //           "Email not verified, Please verify"
 //         )}`
 //       );
@@ -169,7 +163,7 @@ router.get("/google/callback", (req, res, next) => {
 //     console.log(req.user);
 
 //     res.redirect(
-//       `${process.env.CLIENT_URL}/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}`
+//       `/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}`
 //     );
 //   }
 // );
