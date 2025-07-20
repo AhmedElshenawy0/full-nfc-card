@@ -26,8 +26,8 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "5173:5173"
+    network_mode: host
+    restart: always
     depends_on:
       - backend
     volumes: []
