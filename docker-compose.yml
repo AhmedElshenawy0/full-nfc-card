@@ -31,7 +31,7 @@ services:
     depends_on:
       - backend
     volumes: []
-    command: serve -s dist
+    command: serve -s dist -l 5173
 
 volumes:
   postgres-data:
