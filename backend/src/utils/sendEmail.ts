@@ -8,10 +8,12 @@ export const sendVerificationEmail = async (
 ) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.zoho.eu",
+      secure: true,
+      port: 465,
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
+        user: process.env.ZOHO_USER,
+        pass: process.env.ZOHO_PASS,
       },
     });
 
