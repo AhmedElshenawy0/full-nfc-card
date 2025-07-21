@@ -13,6 +13,7 @@ const CustomizeTemplate = () => {
 
   const service_type = searchParams.get("service-type");
   const v_card_ui = searchParams.get("v-card-ui");
+  const mentionedUniqueCode = searchParams.get("uniqueCode");
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -207,7 +208,7 @@ const CustomizeTemplate = () => {
             <button
               type="button"
               onClick={() => {
-                navigator.clipboard.writeText(uniqueCode);
+                navigator.clipboard.writeText(mentionedUniqueCode || "");
                 toast.success("Unique code copied!");
               }}
               className="text-sm px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-800 transition text-white"
