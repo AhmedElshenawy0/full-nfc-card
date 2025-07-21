@@ -35,6 +35,7 @@ const Signup = () => {
 
   const queryType = searchParams.get("type");
   const queryId = searchParams.get("cardId");
+  const uniqueCode = searchParams.get("uniqueCode");
 
   const handleSignUpClick = async () => {
     //=> Validation
@@ -67,7 +68,7 @@ const Signup = () => {
         duration: 5000,
       });
       navigate(
-        `/signin?type=${queryType}&cardId=${queryId}&clietId=${result?.user?.id}`
+        `/signin?type=${queryType}&cardId=${queryId}&clietId=${result?.user?.id}&uniqueCode=${uniqueCode}`
       );
     } catch (err: any) {
       console.error("Error signing up:", err);
@@ -81,7 +82,9 @@ const Signup = () => {
       customError?.data?.message === "User is already exist. Please sign in"
     ) {
       toast.success(`${customError?.data?.message}`);
-      navigate(`/signin?type=${queryType}&cardId=${queryId}`);
+      navigate(
+        `/signin?type=${queryType}&cardId=${queryId}&uniqueCode=${uniqueCode}`
+      );
     }
   }, [error]);
 
