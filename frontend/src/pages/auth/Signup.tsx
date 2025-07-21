@@ -262,7 +262,7 @@ const Signup = () => {
         <p className="mt-4 text-sm text-gray-400">
           Have an account?{" "}
           <Link
-            to={`/signin?type=${queryType}&cardId=${queryId}`}
+            to={`/signin?type=${queryType}&cardId=${queryId}&uniqueCode=${uniqueCode}`}
             className="text-green-700 font-bold hover:underline"
           >
             Sign in here
