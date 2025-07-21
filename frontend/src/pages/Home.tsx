@@ -27,7 +27,9 @@ const RootLayout = () => {
     if (!unique_code) {
       toast.error("There is no card identifire provided");
     } else if (verifyCard?.message === "Go to signup") {
-      navigate(`/signup?type=${verifyCard?.type}&cardId=${verifyCard?.cardId}`);
+      navigate(
+        `/signup?type=${verifyCard?.type}&cardId=${verifyCard?.cardId}&uniqueCode=${verifyCard?.uniqueCode}`
+      );
     }
   };
 

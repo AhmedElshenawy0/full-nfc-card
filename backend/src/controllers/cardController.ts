@@ -37,6 +37,7 @@ export const verifyCard = async (
         message: "Go to signup",
         type: card?.nfc_type,
         cardId: card?.id,
+        uniqueCode: card?.unique_code,
       });
       return;
     }
