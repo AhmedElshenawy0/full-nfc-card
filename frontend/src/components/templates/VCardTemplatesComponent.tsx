@@ -58,6 +58,7 @@ const VCardTemplatesComponent = () => {
   const [searchParams] = useSearchParams();
 
   const serviceType = searchParams.get("service-type");
+  const uniqueCode = searchParams.get("uniqueCode");
 
   const onTemplateSelect = (v_card_type: string) => {
     if (!serviceType) {
@@ -65,7 +66,7 @@ const VCardTemplatesComponent = () => {
       console.log(serviceType);
     } else {
       navigate(
-        `/customize-template?service-type=${serviceType}&v-card-ui=${v_card_type}`
+        `/customize-template?service-type=${serviceType}&v-card-ui=${v_card_type}&uniqueCode=${uniqueCode}`
       );
     }
   };

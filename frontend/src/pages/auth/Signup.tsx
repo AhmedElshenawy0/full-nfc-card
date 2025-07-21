@@ -19,6 +19,7 @@ const Signup = () => {
     city: "",
   });
 
+  const [confirmPassword, setConfirmPassword] = useState("");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -45,6 +46,12 @@ const Signup = () => {
       });
       return;
     }
+
+    if (formData?.password !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
     try {
       if (!queryType || !queryId) {
         toast.error("There is no credential");
@@ -153,6 +160,24 @@ const Signup = () => {
             id="password"
             type="password"
             onChange={(e) => handleChange(e)}
+            placeholder="Create a password"
+            className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm text-gray-400 mb-2"
+          >
+            Confirm Password
+          </label>
+          <input
+            name="password"
+            id="confirmPassword"
+            type="password"
+            onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Create a password"
             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
           />

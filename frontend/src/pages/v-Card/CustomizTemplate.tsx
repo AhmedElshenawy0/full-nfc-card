@@ -203,6 +203,21 @@ const CustomizeTemplate = () => {
             onChange={(e) => setUniqueCode(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(uniqueCode);
+                toast.success("Unique code copied!");
+              }}
+              className="text-sm px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-800 transition text-white"
+            >
+              Copy Code
+            </button>
+            <span className="text-xs text-gray-400">
+              Click to copy your unique code.
+            </span>
+          </div>
         </div>
 
         {/* Submit Button */}

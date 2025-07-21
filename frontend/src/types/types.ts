@@ -6,6 +6,7 @@ export type CustomError = FetchBaseQueryError & {
     type?: string;
     cardId: string | number;
     cliientId?: string;
+    uniqueCode: string;
   };
 };
 

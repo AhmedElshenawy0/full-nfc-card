@@ -44,6 +44,7 @@ const RootLayout = () => {
       navigate("/client-dashboard");
     }
   }, [verifyCard, navigate]);
+
   console.log(error);
 
   //=> Handle error if exist
@@ -54,7 +55,7 @@ const RootLayout = () => {
       toast.error(customError.data.message);
       if (customError?.status === 401) {
         navigate(
-          `/signin?type=${customError?.data?.type}&cardId=${customError?.data?.cardId}`
+          `/signin?type=${customError?.data?.type}&cardId=${customError?.data?.cardId}&uniqueCode=${customError?.data?.uniqueCode}`
         );
       }
     }
@@ -75,6 +76,7 @@ const RootLayout = () => {
       toast.error("Failed to copy");
     }
   };
+
   return (
     <div className="flex flex-col items-center ">
       {/* Input Section */}

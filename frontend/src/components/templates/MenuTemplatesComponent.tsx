@@ -14,6 +14,7 @@ const MenuTemplatesComponent: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const service_type = searchParams.get("service-type");
+  const mentionedUniqueCode = searchParams.get("uniqueCode");
 
   const [createSoldService, { isLoading, isError, isSuccess, error, data }] =
     useCreateSoldServiceMutation();
@@ -117,14 +118,31 @@ const MenuTemplatesComponent: React.FC = () => {
       {/* Unique code Field */}
       <div className="mt-6 w-full">
         <label className="block text-sm text-gray-400 mb-2">
-          Paste Your Unique Code
+          Your Unique Code
         </label>
         <input
           type="text"
-          value={uniqueCode}
+          value={uniqueCode || mentionedUniqueCode || ""}
           onChange={(e) => setUniqueCode(e.target.value)}
           className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
         />
+        <div className="flex items-center gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(
+                uniqueCode || mentionedUniqueCode || ""
+              );
+              toast.success("Unique code copied!");
+            }}
+            className="text-sm px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-800 transition text-white"
+          >
+            Copy Code
+          </button>
+          <span className="text-xs text-gray-400">
+            Click to copy your unique code again.
+          </span>
+        </div>
       </div>
 
       {/* Submit Button */}

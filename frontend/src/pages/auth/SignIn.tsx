@@ -18,12 +18,11 @@ export const SignIn = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryError = searchParams.get("error");
   const queryType = searchParams.get("type");
+  const uniqueCode = searchParams.get("uniqueCode");
   const cardId = searchParams.get("cardId") as string;
   const isAuth = searchParams.get("auth") === "true";
   const gCardId = searchParams.get("gCardId") as string;
   const gType = searchParams.get("gCardType") as any;
-  console.log(queryType);
-  console.log(cardId);
 
   const {
     data,
@@ -51,11 +50,17 @@ export const SignIn = () => {
 
       if (!userCard?.id) {
         if (gType === "vCard") {
-          navigate(`/select-template?service-type=${gType}`);
+          navigate(
+            `/select-template?service-type=${gType}&uniqueCode=${uniqueCode}`
+          );
         } else if (gType === "menu") {
-          navigate(`/select-template?service-type=${gType}`);
+          navigate(
+            `/select-template?service-type=${gType}&uniqueCode=${uniqueCode}`
+          );
         } else if (gType === "file") {
-          navigate(`/file-template?service-type=${gType}`);
+          navigate(
+            `/file-template?service-type=${gType}&uniqueCode=${uniqueCode}`
+          );
         }
       } else {
         navigate(`/client-dashboard`);
@@ -90,9 +95,7 @@ export const SignIn = () => {
           });
           return;
         }
-        console.log("error 111");
       }
-      console.log("error 222");
 
       const result = await signIn({
         email,
@@ -110,18 +113,24 @@ export const SignIn = () => {
       const userSolds = result?.user?.soldServices;
       const userCard = userSolds?.find((ele: any) => ele?.card_id === cardId);
 
-      console.log(userSolds);
-      console.log(userCard);
-      console.log(cardId);
+      // console.log(userSolds);
+      // console.log(userCard);
+      // console.log(cardId);
 
       if (result?.user?.email) {
         if (!userCard?.id) {
           if (queryType === "vCard") {
-            navigate(`/select-template?service-type=${queryType}`);
+            navigate(
+              `/select-template?service-type=${queryType}&uniqueCode=${uniqueCode}`
+            );
           } else if (queryType === "menu") {
-            navigate(`/select-template?service-type=${queryType}`);
+            navigate(
+              `/select-template?service-type=${queryType}&uniqueCode=${uniqueCode}`
+            );
           } else if (queryType === "file") {
-            navigate(`/file-template?service-type=${queryType}}`);
+            navigate(
+              `/file-template?service-type=${queryType}}&uniqueCode=${uniqueCode}`
+            );
           }
         } else {
           navigate(`/client-dashboard`);

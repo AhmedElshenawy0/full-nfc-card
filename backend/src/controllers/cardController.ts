@@ -61,6 +61,7 @@ export const verifyCard = async (
         type: card?.nfc_type,
         cardId: card?.id,
         cliientId: client?.id,
+        uniqueCode: card?.unique_code,
       });
       return;
     }
