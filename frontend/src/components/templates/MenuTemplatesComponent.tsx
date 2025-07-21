@@ -122,7 +122,7 @@ const MenuTemplatesComponent: React.FC = () => {
         </label>
         <input
           type="text"
-          value={uniqueCode || mentionedUniqueCode || ""}
+          value={uniqueCode || ""}
           onChange={(e) => setUniqueCode(e.target.value)}
           className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
         />
@@ -130,9 +130,7 @@ const MenuTemplatesComponent: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              navigator.clipboard.writeText(
-                uniqueCode || mentionedUniqueCode || ""
-              );
+              navigator.clipboard.writeText(mentionedUniqueCode || "");
               toast.success("Unique code copied!");
             }}
             className="text-sm px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-800 transition text-white"
