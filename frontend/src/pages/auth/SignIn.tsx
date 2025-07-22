@@ -23,6 +23,7 @@ export const SignIn = () => {
   const isAuth = searchParams.get("auth") === "true";
   const gCardId = searchParams.get("gCardId") as string;
   const gType = searchParams.get("gCardType") as any;
+  const gUniqueCode = searchParams.get("gUniqueCode") as any;
 
   const {
     data,
@@ -51,22 +52,22 @@ export const SignIn = () => {
       if (!userCard?.id) {
         if (gType === "vCard") {
           navigate(
-            `/select-template?service-type=${gType}&uniqueCode=${uniqueCode}`
+            `/select-template?service-type=${gType}&uniqueCode=${gUniqueCode}`
           );
         } else if (gType === "menu") {
           navigate(
-            `/select-template?service-type=${gType}&uniqueCode=${uniqueCode}`
+            `/select-template?service-type=${gType}&uniqueCode=${gUniqueCode}`
           );
         } else if (gType === "file") {
           navigate(
-            `/file-template?service-type=${gType}&uniqueCode=${uniqueCode}`
+            `/file-template?service-type=${gType}&uniqueCode=${gUniqueCode}`
           );
         }
       } else {
         navigate(`/client-dashboard`);
       }
     }
-  }, [queryError, gCardId, gType, isAuth, data?.user, isSuccess]);
+  }, [queryError, gCardId, gType, isAuth, data?.user, isSuccess, gUniqueCode]);
 
   // Handle Sign In
   const [signIn, { isLoading }] = useSignInMutation();
@@ -218,7 +219,11 @@ export const SignIn = () => {
         transition={{ duration: 0.8, delay: 0.7 }}
         className="mt-6 w-full max-w-md flex justify-center"
       >
-        <GoogleLoginButton type={queryType} cardId={cardId} />
+        <GoogleLoginButton
+          type={queryType}
+          cardId={cardId}
+          uniqueCode={uniqueCode}
+        />
       </motion.div>
     </div>
   );

@@ -87,6 +87,10 @@ router.get(
       httpOnly: true,
       maxAge: 5 * 60 * 1000,
     });
+    res.cookie("uniqueCode", req.query.uniqueCode, {
+      httpOnly: true,
+      maxAge: 5 * 60 * 1000,
+    });
 
     console.log("Stored in session:", req.cookies.cardType);
 
@@ -114,9 +118,10 @@ router.get("/google/callback", (req, res, next) => {
 
         const cardType = req.cookies.cardType;
         const cardId = req.cookies.cardId;
+        const uniqueCode = req.cookies.uniqueCode;
 
         return res.redirect(
-          `/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}`
+          `/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}&gUniqueCode=${uniqueCode}`
         );
       });
     }

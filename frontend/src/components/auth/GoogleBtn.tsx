@@ -1,13 +1,13 @@
 import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
 
-const GoogleLoginButton = ({ cardId, type }: any) => {
+const GoogleLoginButton = ({ cardId, type, uniqueCode }: any) => {
   const handleLogin = () => {
     if (!cardId || !type) {
       toast.error("There is no credintial");
     } else {
       window.open(
-        `/api/auth/google?cardType=${type}&cardId=${cardId}`,
+        `/api/auth/google?cardType=${type}&cardId=${cardId}&uniqueCode=${uniqueCode}`,
         "_self"
       );
     }
