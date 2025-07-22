@@ -13,7 +13,7 @@ const CustomizeTemplate = () => {
 
   const service_type = searchParams.get("service-type");
   const v_card_ui = searchParams.get("v-card-ui");
-  const mentionedUniqueCode = searchParams.get("uniqueCode");
+  // const mentionedUniqueCode = searchParams.get("uniqueCode");
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -204,7 +204,7 @@ const CustomizeTemplate = () => {
             onChange={(e) => setUniqueCode(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
-          <div className="flex items-center gap-2 mt-2">
+          {/* <div className="flex items-center gap-2 mt-2">
             <button
               type="button"
               onClick={() => {
@@ -218,7 +218,7 @@ const CustomizeTemplate = () => {
             <span className="text-xs text-gray-400">
               Click to copy your unique code.
             </span>
-          </div>
+          </div> */}
         </div>
 
         {/* Submit Button */}

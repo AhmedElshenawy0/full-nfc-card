@@ -14,7 +14,7 @@ const MenuTemplatesComponent: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const service_type = searchParams.get("service-type");
-  const mentionedUniqueCode = searchParams.get("uniqueCode");
+  // const mentionedUniqueCode = searchParams.get("uniqueCode");
 
   const [createSoldService, { isLoading, isError, isSuccess, error, data }] =
     useCreateSoldServiceMutation();
@@ -126,7 +126,7 @@ const MenuTemplatesComponent: React.FC = () => {
           onChange={(e) => setUniqueCode(e.target.value)}
           className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
         />
-        <div className="flex items-center gap-2 mt-2">
+        {/* <div className="flex items-center gap-2 mt-2">
           <button
             type="button"
             onClick={() => {
@@ -140,7 +140,7 @@ const MenuTemplatesComponent: React.FC = () => {
           <span className="text-xs text-gray-400">
             Click to copy your unique code again.
           </span>
-        </div>
+        </div> */}
       </div>
 
       {/* Submit Button */}
