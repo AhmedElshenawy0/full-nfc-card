@@ -13,7 +13,7 @@ const VCardTemplatesComponent = () => {
       type: "fourthUI",
       component: (
         <FourthUiTest
-          formData={dummyData}
+          formData={dummyData[0]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -24,7 +24,7 @@ const VCardTemplatesComponent = () => {
       type: "secondUI",
       component: (
         <SecondUiTest
-          formData={dummyData}
+          formData={dummyData[1]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -35,7 +35,7 @@ const VCardTemplatesComponent = () => {
       type: "thirdUI",
       component: (
         <ThirdUITest
-          formData={dummyData}
+          formData={dummyData[2]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -46,7 +46,7 @@ const VCardTemplatesComponent = () => {
       type: "firstUI",
       component: (
         <FirstUITest
-          formData={dummyData}
+          formData={dummyData[3]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />

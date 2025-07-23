@@ -38,9 +38,9 @@ const router = createBrowserRouter([
       {
         path: "/select-template",
         element: (
-          <ProtectAuthRoute>
-            <SelectTemplate />
-          </ProtectAuthRoute>
+          // <ProtectAuthRoute>
+          <SelectTemplate />
+          // </ProtectAuthRoute>
         ),
       },
       {
