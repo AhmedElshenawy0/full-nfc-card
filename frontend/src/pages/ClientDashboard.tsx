@@ -95,7 +95,7 @@ const ClientDashboard = () => {
               className="relative p-6 bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl border border-green-800 transition-all"
             >
               <h4 className="text-xl font-bold text-center text-white mb-6 capitalize tracking-wide">
-                {ele?.type} Service
+                {ele?.type === "vCard" ? "Profile Card" : ele?.type === "menu" ? "Menu" : ""} Service
               </h4>
               <div className="flex flex-col space-y-3">
                 <button
