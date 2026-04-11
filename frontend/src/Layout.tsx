@@ -16,10 +16,16 @@ const Layout = () => {
   const noPaddingRoutes = ["/menu", "/template"];
   return (
     <div
-      className={`min-h-screen relative bg-gradient-to-br from-black to-[#3a0d4e] text-gray-200 ${
+      className={`min-h-screen relative bg-gradient-to-bl from-[#3a0d4e] to-[#000000] text-gray-200 ${
         noPaddingRoutes.includes(location.pathname) ? "" : "px-4 py-6"
       }`}
     >
+      {/* <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url('/images/noisy3.png')`,
+        }}
+      /> */}
       {!hideHeaderRoutes.includes(location.pathname) && (
         <motion.div
           initial={{ opacity: 0, y: -30 }}

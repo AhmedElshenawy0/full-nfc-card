@@ -39,8 +39,8 @@ export const authSlice = createApi({
             authSlice.util.updateQueryData(
               "getClientInfo",
               undefined,
-              () => data
-            )
+              () => data,
+            ),
           );
         } catch (err) {
           console.error("signIn error:", err);

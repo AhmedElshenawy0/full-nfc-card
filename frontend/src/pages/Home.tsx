@@ -21,6 +21,7 @@ const RootLayout = () => {
   } = useVerifyCardQuery(unique_code, {
     skip: !unique_code, //=> Only fetch when unique_code is exist
   });
+  console.log(verifyCard);
 
   //=> Handle Verify click btn
   const handleVerifyClick = () => {
@@ -28,7 +29,7 @@ const RootLayout = () => {
       toast.error("There is no card identifire provided");
     } else if (verifyCard?.message === "Go to signup") {
       navigate(
-        `/signup?type=${verifyCard?.type}&cardId=${verifyCard?.cardId}&uniqueCode=${verifyCard?.uniqueCode}`
+        `/signup?type=${verifyCard?.type}&cardId=${verifyCard?.cardId}&uniqueCode=${verifyCard?.uniqueCode}`,
       );
     }
   };
@@ -57,7 +58,7 @@ const RootLayout = () => {
       toast.error(customError.data.message);
       if (customError?.status === 401) {
         navigate(
-          `/signin?type=${customError?.data?.type}&cardId=${customError?.data?.cardId}&uniqueCode=${customError?.data?.uniqueCode}`
+          `/signin?type=${customError?.data?.type}&cardId=${customError?.data?.cardId}&uniqueCode=${customError?.data?.uniqueCode}`,
         );
       }
     }

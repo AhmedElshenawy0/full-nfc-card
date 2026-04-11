@@ -132,7 +132,7 @@ const EditMenu: React.FC = () => {
               <AiFillDelete size={15} color="white" />
             </button>
           </div>
-        )
+        ),
       )}
 
       {(newImages.length > 0 || deletedImages.length > 0) && (

@@ -108,12 +108,18 @@ router.get("/google/callback", (req, res, next) => {
     ) => {
       if (err || !user) {
         const errorMsg = info?.message || "Authentication failed";
-        return res.redirect(`/signin?error=${encodeURIComponent(errorMsg)}`);
+        return res.redirect(
+          `${process.env.CLIENT_URL}/signin?error=${encodeURIComponent(
+            errorMsg
+          )}`
+        );
       }
 
       req.logIn(user, (err) => {
         if (err) {
-          return res.redirect(`/signin?error=Login failed`);
+          return res.redirect(
+            `${process.env.CLIENT_URL}/signin?error=Login failed`
+          );
         }
 
         const cardType = req.cookies.cardType;
@@ -121,7 +127,7 @@ router.get("/google/callback", (req, res, next) => {
         const uniqueCode = req.cookies.uniqueCode;
 
         return res.redirect(
-          `/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}&gUniqueCode=${uniqueCode}`
+          `${process.env.CLIENT_URL}/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}&gUniqueCode=${uniqueCode}`
         );
       });
     }

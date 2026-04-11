@@ -1,16 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { RiUploadCloudLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import {
   useGetOneSoldServicesQuery,
   useUpdateSoldServiceMutation,
 } from "../../store/apiSlice/Soldslice";
 import { CustomError, V_card_data } from "../../types/types";
-import BtnSnipper from "../../components/global/BtnSnipper";
 import ChangeBgColor from "../../components/templates/ChangeBgColor";
 import ChangeTheme from "../../components/templates/ChangeTheme";
 import { FaCheck } from "react-icons/fa";
+import {
+  Form,
+  Input,
+  Button,
+  Upload,
+  Avatar,
+  ConfigProvider,
+  theme,
+  Typography,
+  Card,
+  Row,
+  Col,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 const CustomizeTemplate = () => {
   const [formData, setFormData] = useState<V_card_data>({
@@ -32,6 +46,7 @@ const CustomizeTemplate = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isColorOpen, setIsColorOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [antForm] = Form.useForm();
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -39,11 +54,11 @@ const CustomizeTemplate = () => {
 
   const { data: response } = useGetOneSoldServicesQuery(service_Id);
   const vCardContent = response?.soldServices?.vCardupdatableContent;
-  const [theme, setTheme] = useState("");
+  const [selectedTheme, setTheme] = useState("");
 
   useEffect(() => {
     if (vCardContent) {
-      setFormData({
+      const data = {
         name: vCardContent.name || "",
         bio: vCardContent.bio || "",
         job: vCardContent.job || "",
@@ -56,33 +71,34 @@ const CustomizeTemplate = () => {
         linkedin_link: vCardContent.linkedin_link || "",
         mainBackground: vCardContent.mainBackground || "",
         buttonBackground: vCardContent.buttonBackground || "",
-      });
+      };
+      setFormData(data);
+      antForm.setFieldsValue(data);
       setImagePreview(vCardContent.image);
     }
   }, [vCardContent]);
 
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  // Prevent antd auto-upload, handle preview manually
+  const handleImageUpload = (file: File) => {
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    return false;
   };
 
   const [updateSoldService, { isError, error, isLoading }] =
     useUpdateSoldServiceMutation();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     try {
+      const values = antForm.getFieldsValue();
+      const mergedData = { ...formData, ...values };
+
       const formDataData = new FormData();
       formDataData.append("type", "vCard");
-      theme ? formDataData.append("vCardUi", theme) : "";
+      if (selectedTheme) formDataData.append("vCardUi", selectedTheme);
 
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataData.append(key, value ?? "");
+      Object.entries(mergedData).forEach(([key, value]) => {
+        formDataData.append(key, (value as string) ?? "");
       });
 
       if (imageFile) {
@@ -92,8 +108,9 @@ const CustomizeTemplate = () => {
       await updateSoldService({
         id: service_Id,
         data: formDataData,
-        theme,
+        theme: selectedTheme,
       }).unwrap();
+
       toast.success("Sold service updated successfully");
       navigate("/client-dashboard");
     } catch (err) {
@@ -103,13 +120,13 @@ const CustomizeTemplate = () => {
   };
 
   const [tempMainBackground, setTempMainBackground] = useState(
-    formData.mainBackground
+    formData.mainBackground,
   );
   const [tempButtonBackground, setTempButtonBackground] = useState(
-    formData.buttonBackground
+    formData.buttonBackground,
   );
-  const [textColor, setTextColor] = useState("text-black");
-  const [btnColor, setBtnColor] = useState("text-black");
+  const [textColor, setTextColor] = useState("black");
+  const [btnColor, setBtnColor] = useState("black");
 
   useEffect(() => {
     if (isColorOpen) {
@@ -128,9 +145,8 @@ const CustomizeTemplate = () => {
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       return brightness < 130;
     };
-
-    setTextColor(isDark(tempMainBackground) ? "text-white" : "text-black");
-    setBtnColor(isDark(tempButtonBackground) ? "text-white" : "text-black");
+    setTextColor(isDark(tempMainBackground) ? "#fff" : "#000");
+    setBtnColor(isDark(tempButtonBackground) ? "#fff" : "#000");
   }, [tempMainBackground, tempButtonBackground]);
 
   const customError = error as CustomError;
@@ -139,82 +155,294 @@ const CustomizeTemplate = () => {
       toast.error(customError.data.message);
     }
   }, [isError, error]);
-  console.log("theme is ", theme);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const sectionLabel = (text: string) => (
+    <Text
+      style={{
+        color: "#a855f7",
+        fontSize: 11,
+        letterSpacing: "0.18em",
+        textTransform: "uppercase",
+        fontWeight: 600,
+      }}
+    >
+      {text}
+    </Text>
+  );
+
   return (
-    <div className="min-h-screen flex flex-col items-center text-gray-200 px-0 py-0">
-      <h1 className="text-2xl font-bold text-white mb-6">Edit Your Template</h1>
-
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md p-6 rounded-lg shadow-lg space-y-6"
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: "#a855f7",
+          colorBgContainer: "#13131a",
+          colorBgElevated: "#1c1c26",
+          colorBorder: "rgba(255,255,255,0.07)",
+          borderRadius: 12,
+          colorText: "#e5e7eb",
+          colorTextSecondary: "#9ca3af",
+        },
+        components: {
+          Input: {
+            colorBgContainer: "#1c1c26",
+            colorBorder: "rgba(255,255,255,0.07)",
+            hoverBorderColor: "#a855f7",
+            activeBorderColor: "#a855f7",
+          },
+          Card: {
+            colorBgContainer: "#13131a",
+            colorBorderSecondary: "rgba(255,255,255,0.06)",
+          },
+          Button: {
+            colorBgContainer: "#1c1c26",
+          },
+        },
+      }}
+    >
+      <div
+        style={{ backgroundColor: "#0d0d10" }}
+        className="flex flex-col min-h-screen items-center px-4 py-10"
       >
-        {/* Profile Image */}
-        <div className="relative flex flex-col items-center">
-          <div className="relative w-32 h-32">
-            <img
-              src={imagePreview ?? formData.image ?? ""}
-              alt="Profile"
-              className="w-full h-full object-top rounded-full object-cover border-4 border-gray-700 shadow-lg"
-            />
-            <label
-              htmlFor="image"
-              className="absolute bottom-1 right-1 bg-gray-800 p-2 rounded-full shadow-md hover:bg-gray-700 transition-all cursor-pointer"
-            >
-              <RiUploadCloudLine size={20} className="text-white" />
-            </label>
-          </div>
-          <input
-            id="image"
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
+        {/* Header */}
+        <div className="text-center mb-8">
+          <Text
+            style={{
+              color: "#a855f7",
+              letterSpacing: "0.18em",
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              display: "block",
+              marginBottom: 8,
+            }}
+          >
+            Template Editor
+          </Text>
+          <Title level={2} style={{ color: "#fff", margin: 0 }}>
+            Edit Your Card
+          </Title>
+          <div
+            style={{
+              width: 48,
+              height: 2,
+              background: "linear-gradient(to right, #a855f7, #3b82f6)",
+              borderRadius: 9999,
+              margin: "12px auto 0",
+            }}
           />
-          <p className="mt-2 text-sm text-gray-500">Max image size: 3MB</p>
         </div>
 
-        {/* Text Fields */}
-        {[
-          ["name", "Name"],
-          ["job", "Job"],
-          ["bio", "Bio"],
-          ["about", "About"],
-          ["phone", "Phone"],
-          ["address", "Address"],
-          ["facebook_link", "Facebook Link"],
-          ["instgram_link", "Instagram Link"],
-          ["linkedin_link", "LinkedIn Link"],
-        ].map(([key, label]) => (
-          <div key={key}>
-            <label className="block text-sm text-gray-400 mb-2">{label}</label>
-            <input
-              type="text"
-              value={(formData[key as keyof V_card_data] || "") as string}
-              onChange={(e) =>
-                setFormData({ ...formData, [key]: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
-          </div>
-        ))}
-
-        {/* 🎨 Change color */}
-        <div className="relative p-[2px] rounded-xl bg-[length:200%_200%] bg-gradient-to-r from-green-600 via-[#a531d6] to-blue-500 animate-[borderMove_4s_linear_infinite]">
-          <div className="rounded-xl bg-gray-900 p-2 text-white">
-            <button
-              type="button"
-              onClick={() => setIsColorOpen(true)}
-              className="text-lg mx-auto w-full font-semibold text-center cursor-pointer"
+        <Form
+          form={antForm}
+          layout="vertical"
+          onFinish={handleSubmit}
+          style={{ width: "100%", maxWidth: 448 }}
+          requiredMark={false}
+        >
+          {/* Profile Image */}
+          <Card style={{ marginBottom: 16, textAlign: "center" }}>
+            <Upload
+              showUploadList={false}
+              beforeUpload={handleImageUpload}
+              accept="image/*"
             >
-              🎨 Change color
-            </button>
-          </div>
-        </div>
+              <div
+                style={{
+                  display: "inline-block",
+                  position: "relative",
+                  cursor: "pointer",
+                }}
+              >
+                <Avatar
+                  src={imagePreview || formData.image}
+                  size={112}
+                  style={{ border: "2px solid rgba(255,255,255,0.1)" }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 4,
+                    right: 4,
+                    background: "#1c1c26",
+                    borderRadius: "50%",
+                    width: 28,
+                    height: 28,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <UploadOutlined style={{ color: "#fff", fontSize: 13 }} />
+                </div>
+              </div>
+            </Upload>
+            <Text
+              type="secondary"
+              style={{ fontSize: 12, marginTop: 8, display: "block" }}
+            >
+              Click avatar to change · Max 3MB
+            </Text>
+          </Card>
 
+          {/* Personal Info */}
+          <Card
+            title={sectionLabel("Personal Info")}
+            style={{ marginBottom: 16 }}
+          >
+            {[
+              ["name", "Full Name"],
+              ["job", "Job Title"],
+              ["bio", "Bio"],
+              ["about", "About"],
+            ].map(([key, label]) => (
+              <Form.Item
+                key={key}
+                name={key}
+                label={label}
+                style={{ marginBottom: 12 }}
+              >
+                <Input
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
+                />
+              </Form.Item>
+            ))}
+          </Card>
+
+          {/* Contact */}
+          <Card title={sectionLabel("Contact")} style={{ marginBottom: 16 }}>
+            {[
+              ["phone", "Phone Number"],
+              ["address", "Address"],
+            ].map(([key, label]) => (
+              <Form.Item
+                key={key}
+                name={key}
+                label={label}
+                style={{ marginBottom: 12 }}
+              >
+                <Input
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
+                />
+              </Form.Item>
+            ))}
+          </Card>
+
+          {/* Social Links */}
+          <Card
+            title={sectionLabel("Social Links")}
+            style={{ marginBottom: 16 }}
+          >
+            {[
+              ["facebook_link", "Facebook"],
+              ["instgram_link", "Instagram"],
+              ["linkedin_link", "LinkedIn"],
+            ].map(([key, label]) => (
+              <Form.Item
+                key={key}
+                name={key}
+                label={label}
+                style={{ marginBottom: 12 }}
+              >
+                <Input
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
+                />
+              </Form.Item>
+            ))}
+          </Card>
+
+          {/* Appearance */}
+          <Card title={sectionLabel("Appearance")} style={{ marginBottom: 16 }}>
+            {/* Change Color */}
+            <Button
+              type="default"
+              block
+              onClick={() => setIsColorOpen(true)}
+              style={{
+                height: 44,
+                marginBottom: 10,
+                background:
+                  "linear-gradient(to right, rgba(126,34,206,0.25), rgba(29,78,216,0.2))",
+                borderColor: "rgba(168,85,247,0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>🎨 Change Colors</span>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Customize →
+              </Text>
+            </Button>
+
+            {/* {isColorOpen && (
+              <ChangeBgColor
+                tempMainBackground={tempMainBackground}
+                tempButtonBackground={tempButtonBackground}
+                setTempMainBackground={setTempMainBackground}
+                setTempButtonBackground={setTempButtonBackground}
+                setIsColorOpen={setIsColorOpen}
+                setFormData={setFormData}
+                formData={formData}
+                ui={response?.soldServices?.vCardUi}
+              />
+            )} */}
+
+            {/* Change Theme */}
+            <Button
+              type="default"
+              block
+              onClick={() => setIsThemeOpen(true)}
+              style={{
+                height: 44,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>✦ Change Theme</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {selectedTheme || response?.soldServices?.vCardUi}
+                </Text>
+                <FaCheck style={{ color: "#4ade80", fontSize: 12 }} />
+              </span>
+            </Button>
+          </Card>
+
+          {/* Color Preview */}
+
+          {/* Submit */}
+          <Form.Item>
+            <Button
+              htmlType="submit"
+              block
+              loading={isLoading}
+              style={{
+                height: 46,
+                background: "linear-gradient(to right, #15803d, #059669)",
+                borderColor: "transparent",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 14,
+                borderRadius: 12,
+              }}
+            >
+              {!isLoading && "Save Changes"}
+            </Button>
+          </Form.Item>
+        </Form>
         {isColorOpen && (
           <ChangeBgColor
             tempMainBackground={tempMainBackground}
@@ -228,55 +456,15 @@ const CustomizeTemplate = () => {
           />
         )}
 
-        {/*  Change Theme */}
-        <div className="relative p-[2px] rounded-xl bg-[length:200%_200%] bg-gradient-to-r from-white via-[#a531d6] to-white ">
-          <div className="rounded-xl bg-gray-900 p-2 text-white">
-            <button
-              type="button"
-              onClick={() => setIsThemeOpen(true)}
-              className="text-lg mx-auto w-full font-semibold text-center cursor-pointer"
-            >
-              Change Theme
-            </button>
-          </div>
-          <div className="text-center font-bold text-black flex justify-center gap-2 items-center">
-            {theme ? theme : response?.soldServices?.vCardUi}
-            <FaCheck className="text-green-600 w-4 h-4 font-bold " />
-          </div>
-        </div>
-
         {isThemeOpen && (
           <ChangeTheme
             setIsThemeOpen={setIsThemeOpen}
             setTheme={setTheme}
-            theme={theme}
+            theme={selectedTheme}
           />
         )}
-        {/* Preview Colors */}
-        <div className="flex items-center gap-2 w-full">
-          <div
-            style={{ backgroundColor: formData.mainBackground }}
-            className={`${textColor} p-6 rounded-lg shadow-md font-semibold`}
-          >
-            This is how your main background will look!
-          </div>
-          <div
-            style={{ backgroundColor: formData.buttonBackground }}
-            className={`${btnColor} p-6 rounded-lg shadow-md font-semibold`}
-          >
-            This is how your button background will look!
-          </div>
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          className="w-full px-4 py-2 cursor-pointer font-semibold bg-green-800 text-gray-100 rounded-lg shadow-md hover:bg-green-900 transition"
-        >
-          {isLoading ? <BtnSnipper /> : "Save Changes"}
-        </button>
-      </form>
-    </div>
+      </div>
+    </ConfigProvider>
   );
 };
 

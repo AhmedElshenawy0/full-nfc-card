@@ -87,7 +87,7 @@ const CustomizeTemplate = () => {
   }, [isError, isSuccess, error, data]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-black to-[#3a0d4e] text-gray-200 px-4 py-6">
+    <div className="min-h-screen relative flex flex-col items-center bg-gradient-to-br from-black to-[#3a0d4e] text-gray-200 px-4 py-6">
       <h1 className="text-2xl font-bold text-white mb-6">
         Customize Your Template
       </h1>

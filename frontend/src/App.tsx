@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/global/ErrorBoundary";
 import ProtectAdminPage from "./components/auth/ProtectAdminPage";
 import VerifyEmail from "./pages/auth/VerifyEmail";
+import Deals from "./pages/Deals";
 
 const router = createBrowserRouter([
   {
@@ -66,6 +67,10 @@ const router = createBrowserRouter([
       {
         path: "/menu-template",
         element: <MenuTemplate />,
+      },
+      {
+        path: "/deals",
+        element: <Deals />,
       },
       {
         path: "/edit-menu",

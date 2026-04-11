@@ -30,22 +30,6 @@ const MenuTemplate: React.FC = () => {
   if (isLoading) return <Snipper />;
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-black to-[#3a0d4e] text-gray-200 p-0">
-      {/* <div className="text-xl sm:text-4xl md:text-5xl font-extrabold text-white text-center mb-4 tracking-wide drop-shadow-md">
-        <Typewriter
-          onInit={(typewriter) => {
-            typewriter
-              .typeString("Welcom To Bad Elhara")
-              .pauseFor(2000)
-              .deleteAll()
-              .start();
-          }}
-          options={{
-            loop: true,
-            delay: 100,
-          }}
-        />
-      </div> */}
-
       {menuService?.menuUpdatableContent?.length > 0 ? (
         <div className="w-full flex items-center justify-center">
           <div className="w-[100%] ">
