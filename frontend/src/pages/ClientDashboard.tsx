@@ -20,7 +20,7 @@ const ClientDashboard = () => {
 
   const handleViewDemoClick = (soldServiceId: number) => {
     const soldService = data?.user?.soldServices?.find(
-      (service: any) => service.id === soldServiceId
+      (service: any) => service.id === soldServiceId,
     );
     if (soldService) {
       if (soldService.type === "vCard") {
@@ -66,57 +66,50 @@ const ClientDashboard = () => {
       {isLoading ? (
         <Snipper />
       ) : (
-        <>
-          {/* User Services Section */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 w-[80%] max-w-5xl mt-6"
-          >
-            {data?.user?.soldServices.map((ele: SoldService) => (
-              <motion.div
-                key={ele.id}
-                className="relative p-6 bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl border border-green-800 transition-all"
-              >
-                <h4 className="text-xl font-bold text-center text-white mb-6 capitalize tracking-wide">
-                  {ele?.type} Service
-                </h4>
-                <div className="flex flex-col space-y-3">
-                  <button
-                    onClick={() => handleViewDemoClick(ele.id)}
-                    className="w-full px-6 py-3 bg-[#3a0d4e] cursor-pointer text-white text-sm font-bold rounded-xl shadow-md transition-all"
-                  >
-                    View Demo
-                  </button>
-                  <button
-                    onClick={() => handleEditServiceClick(ele.id, ele.type)}
-                    className="w-full px-6 py-3 bg-green-800 cursor-pointer text-white text-sm font-bold rounded-xl shadow-md transition-all"
-                  >
-                    Edit Service
-                  </button>
-                  <QRShapeSelector
-                    qrUrl={`${import.meta.env.VITE_CLIENT_URL}/${
-                      ele?.type === "vCard"
-                        ? "template"
-                        : ele?.type === "menu"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 w-[80%] max-w-5xl"
+        >
+          {data?.user?.soldServices.map((ele: SoldService) => (
+            <motion.div
+              key={ele.id}
+              // whileHover={{ scale: 1.05 }}
+              // whileTap={{ scale: 0.98 }}
+              className="relative p-6 bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl border border-green-800 transition-all"
+            >
+              <h4 className="text-xl font-bold text-center text-white mb-6 capitalize tracking-wide">
+                {ele?.type} Service
+              </h4>
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={() => handleViewDemoClick(ele.id)}
+                  className="w-full px-6 py-3 bg-[#3a0d4e] cursor-pointer text-white text-sm font-bold rounded-xl shadow-md transition-all"
+                  aria-label="View demo of this service"
+                >
+                  View Demo
+                </button>
+                <button
+                  onClick={() => handleEditServiceClick(ele.id, ele.type)}
+                  className="w-full px-6 py-3 bg-green-800 cursor-pointer text-white text-sm font-bold rounded-xl shadow-md transition-all"
+                  aria-label="Edit this service"
+                >
+                  Edit Service
+                </button>
+                <QRShapeSelector
+                  qrUrl={`${import.meta.env.VITE_CLIENT_URL}/${
+                    ele?.type === "vCard"
+                      ? "template"
+                      : ele?.type === "menu"
                         ? "menu"
                         : ""
-                    }?id=${ele?.id}`}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Deals Section */}
-          <Link
-            to="/deals"
-            className="text-2xl font-bold text-white mt-10 mb-4"
-          >
-            Check Deals
-          </Link>
-        </>
+                  }?id=${ele?.id}`}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       )}
 
       <button

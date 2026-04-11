@@ -129,7 +129,8 @@ const Cards = () => {
                 : "bg-gray-700 hover:bg-gray-600 text-white"
             }`}
           >
-            {cardType}
+                      {cardType === "vCard" ? "Personal Card" : cardType}
+
           </button>
         ))}
       </div>
@@ -148,11 +149,11 @@ const Cards = () => {
                   #{i + 1}
                 </div>
                 <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wide">
-                  {card.nfc_type}
+                  {card.nfc_type === "vCard" ? "Profile card" :card.nfc_type === "menu" ? "Menu" : "" }
                 </h2>
                 <p className="text-gray-400 mb-1 capitalize">
                   <span className="font-medium text-white">Type:</span>{" "}
-                  {card.nfc_type}
+                  {card.nfc_type === "vCard" ? "Profile card" :card.nfc_type === "menu" ? "Menu" : "" }
                 </p>
                 <p className="text-gray-400 capitalize">
                   <span className="font-medium text-white ">Owner:</span>{" "}
