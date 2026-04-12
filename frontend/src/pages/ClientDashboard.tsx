@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SoldService } from "../types/types";
 import toast from "react-hot-toast";
 import Snipper from "../components/global/Snipper";
-import QRShapeSelector from "../components/global/QrCode";
+import QRWithImage from "../components/global/QrCode";
 import { useEffect, useState } from "react";
 import { MdNfc } from "react-icons/md";
 import { HiOutlineMenuAlt2 } from "react-icons/hi";
@@ -280,12 +280,12 @@ const ServiceCard = ({
           >
             QR Code
           </p>
-          <QRShapeSelector
+          <QRWithImage
             qrUrl={`https://signuptap.com/${
               ele.type === "vCard"
                 ? "template"
                 : ele.type === "menu"
-                  ? "menu"
+                  ? "menu-template"
                   : ""
             }?id=${ele.id}`}
           />
