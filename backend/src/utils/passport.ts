@@ -30,7 +30,7 @@ passport.deserializeUser(
     } catch (err) {
       done(err, undefined);
     }
-  }
+  },
 );
 
 // Google Strategy
@@ -39,7 +39,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      callbackURL: "/api/auth/google/callback",
+      callbackURL: `${process.env.CLIENT_URL}/api/auth/google/callback`,
       passReqToCallback: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {
@@ -77,8 +77,8 @@ passport.use(
       } catch (error) {
         return done(error, undefined);
       }
-    }
-  )
+    },
+  ),
 );
 
 //Local Strategy
@@ -108,7 +108,7 @@ passport.use(
       } catch (error) {
         return done(error);
       }
-    }
-  )
+    },
+  ),
 );
 export default passport;
