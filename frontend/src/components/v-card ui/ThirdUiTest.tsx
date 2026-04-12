@@ -33,14 +33,14 @@ const ThirdUITest = ({
         ? isDark(tempMainBackground || formData?.mainBackground)
           ? "text-white"
           : "text-black"
-        : "text-white"
+        : "text-white",
     );
     setTextBtnColor(
       tempButtonBackground || formData?.buttonBackground
         ? isDark(tempButtonBackground || formData?.buttonBackground)
           ? "text-white"
           : "text-black"
-        : "text-black"
+        : "text-black",
     );
   }, [
     tempMainBackground,
@@ -50,7 +50,7 @@ const ThirdUITest = ({
   ]);
 
   const lightColor = tinycolor(
-    tempMainBackground ? tempMainBackground : "#0d1321"
+    tempMainBackground ? tempMainBackground : "#0d1321",
   )
     .lighten(10)
     .toHexString();

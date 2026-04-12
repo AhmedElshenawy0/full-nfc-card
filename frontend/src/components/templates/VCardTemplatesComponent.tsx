@@ -66,7 +66,7 @@ const VCardTemplatesComponent = () => {
       console.log(serviceType);
     } else {
       navigate(
-        `/customize-template?service-type=${serviceType}&v-card-ui=${v_card_type}&uniqueCode=${uniqueCode}`
+        `/customize-template?service-type=${serviceType}&v-card-ui=${v_card_type}&uniqueCode=${uniqueCode}`,
       );
     }
   };

@@ -1,312 +1,435 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AiFillDelete } from "react-icons/ai";
-import { FiUploadCloud } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiUploadCloud, FiX, FiCheck, FiImage } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { CustomError } from "../../types/types";
 import { useCreateSoldServiceMutation } from "../../store/apiSlice/Soldslice";
 import BtnSnipper from "../global/BtnSnipper";
 
+// ─── small reusable button ────────────────────────────────────────────────────
+interface GhostBtnProps {
+  onClick: () => void;
+  children: React.ReactNode;
+  variant?: "danger" | "neutral";
+}
+
+const GhostBtn = ({
+  onClick,
+  children,
+  variant = "neutral",
+}: GhostBtnProps) => {
+  const [hov, setHov] = useState(false);
+  const isDanger = variant === "danger";
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px",
+        borderRadius: 8,
+        border: `0.5px solid ${isDanger ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.1)"}`,
+        background: hov
+          ? isDanger
+            ? "rgba(127,29,29,0.4)"
+            : "rgba(255,255,255,0.08)"
+          : isDanger
+            ? "rgba(127,29,29,0.2)"
+            : "rgba(255,255,255,0.04)",
+        color: isDanger ? "rgba(252,165,165,0.9)" : "rgba(255,255,255,0.5)",
+        cursor: "pointer",
+        transition: "background 0.15s, border-color 0.15s",
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ─── image thumbnail card ─────────────────────────────────────────────────────
+const ThumbCard = ({
+  file,
+  index,
+  onDelete,
+}: {
+  file: File;
+  index: number;
+  onDelete: (i: number) => void;
+}) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.85 }}
+    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+    style={{
+      position: "relative",
+      width: "calc(50% - 6px)",
+      aspectRatio: "1 / 1",
+      borderRadius: 14,
+      overflow: "hidden",
+      border: "0.5px solid rgba(255,255,255,0.1)",
+      flexShrink: 0,
+    }}
+  >
+    <img
+      src={URL.createObjectURL(file)}
+      alt={`Preview ${index}`}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+      }}
+    />
+    {/* overlay on hover */}
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background:
+          "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)",
+        pointerEvents: "none",
+      }}
+    />
+    {/* filename */}
+    <p
+      style={{
+        position: "absolute",
+        bottom: 28,
+        left: 8,
+        margin: 0,
+        fontSize: 10,
+        color: "rgba(255,255,255,0.55)",
+        fontFamily: "'DM Mono', monospace",
+        maxWidth: "80%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+      }}
+    >
+      {file.name}
+    </p>
+    {/* delete btn */}
+    <div style={{ position: "absolute", bottom: 6, right: 6 }}>
+      <GhostBtn onClick={() => onDelete(index)} variant="danger">
+        <FiX size={12} />
+      </GhostBtn>
+    </div>
+  </motion.div>
+);
+
+// ─── main component ───────────────────────────────────────────────────────────
 const MenuTemplatesComponent: React.FC = () => {
   const navigate = useNavigate();
   const [menuImages, setMenuImages] = useState<File[]>([]);
   const [uniqueCode, setUniqueCode] = useState<string>("");
+  const [inputFocused, setInputFocused] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const [searchParams] = useSearchParams();
   const service_type = searchParams.get("service-type");
-  // const mentionedUniqueCode = searchParams.get("uniqueCode");
 
   const [createSoldService, { isLoading, isError, isSuccess, error, data }] =
     useCreateSoldServiceMutation();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const filesArray = Array.from(event.target.files);
-      setMenuImages((prevImages) => [...prevImages, ...filesArray]);
-    }
+  const addFiles = (files: FileList | null) => {
+    if (!files) return;
+    setMenuImages((prev) => [...prev, ...Array.from(files)]);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    addFiles(e.target.files);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(false);
+    addFiles(e.dataTransfer.files);
   };
 
   const handleDeleteImage = (index: number) => {
-    setMenuImages(menuImages.filter((_, i) => i !== index));
+    setMenuImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
     if (!service_type) {
-      toast.error("There is no type provided");
+      toast.error("No service type provided");
       return;
     }
-
     const formData = new FormData();
     formData.append("type", service_type);
     formData.append("uniqueCode", uniqueCode);
     formData.append("vCardUi", "");
-    menuImages.forEach((file) => {
-      formData.append("files", file);
-    });
-
+    menuImages.forEach((file) => formData.append("files", file));
     try {
-      const response = await createSoldService(formData).unwrap();
-      console.log("Success:", response);
-    } catch (error) {
-      console.error("Error From Client Create Product", error);
+      await createSoldService(formData).unwrap();
+    } catch (err) {
+      console.error("Error creating service:", err);
     }
   };
 
   const customError = error as CustomError;
 
   useEffect(() => {
-    if (isError && customError?.data?.message) {
+    if (isError && customError?.data?.message)
       toast.error(customError.data.message);
-    } else if (isSuccess) {
-      toast.success("Menu has created successfully");
-      navigate(`/client-dashboard`);
+    else if (isSuccess) {
+      toast.success("Menu created successfully!");
+      navigate("/client-dashboard");
     }
   }, [isError, isSuccess, error, data]);
 
+  const canSubmit = menuImages.length > 0 && uniqueCode.trim().length > 0;
+
   return (
-    <div className="flex flex-col items-center">
-      {/* Upload Button */}
-      <div className="mb-6 w-full">
-        <div className="border-2 border-dashed rounded-lg p-4 text-center w-full cursor-pointer border-purple-400 bg-purple-900/20">
-          <label
-            htmlFor="image"
-            className="text-gray-300 cursor-pointer flex flex-col-reverse"
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+        width: "100%",
+      }}
+    >
+      {/* ── upload zone ── */}
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        style={{
+          borderRadius: 16,
+          border: `1.5px dashed ${dragOver ? "rgba(167,139,250,0.6)" : "rgba(167,139,250,0.25)"}`,
+          background: dragOver
+            ? "rgba(88,28,135,0.15)"
+            : "rgba(88,28,135,0.07)",
+          padding: "28px 20px",
+          textAlign: "center",
+          cursor: "pointer",
+          transition: "border-color 0.2s, background 0.2s",
+          position: "relative",
+        }}
+      >
+        <label htmlFor="image" style={{ cursor: "pointer", display: "block" }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(167,139,250,0.12)",
+              border: "0.5px solid rgba(167,139,250,0.25)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 12px",
+            }}
           >
-            <p className="mt-2 text-sm text-gray-500">
-              Max image size: 3MB for each image
-            </p>
-            <span>Click here to Upload images</span>
-            <FiUploadCloud size={30} className="mx-auto text-purple-500" />
-          </label>
-          <input
-            type="file"
-            id="image"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </div>
+            <FiUploadCloud size={20} color="rgba(192,132,252,0.85)" />
+          </div>
+          <p
+            style={{
+              margin: "0 0 4px",
+              fontSize: 14,
+              fontWeight: 500,
+              color: "rgba(255,255,255,0.8)",
+            }}
+          >
+            {dragOver ? "Drop images here" : "Click or drag to upload"}
+          </p>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 12,
+              color: "rgba(255,255,255,0.3)",
+              fontFamily: "'DM Mono', monospace",
+            }}
+          >
+            PNG, JPG, WEBP · max 3 MB each
+          </p>
+        </label>
+        <input
+          type="file"
+          id="image"
+          accept="image/*"
+          multiple
+          style={{ display: "none" }}
+          onChange={handleImageUpload}
+        />
       </div>
 
-      {/* Image Preview */}
-      {menuImages.length > 0 && (
-        <div className="flex gap-2 flex-wrap w-full">
-          {menuImages.map((image, index) => (
+      {/* ── image grid ── */}
+      <AnimatePresence>
+        {menuImages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: "hidden" }}
+          >
+            {/* header row */}
             <div
-              className="mt-4 w-[calc(50%-8px)] aspect-[1/1] md:aspect-[1/1] relative"
-              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
             >
-              <img
-                src={URL.createObjectURL(image)}
-                alt={`Preview ${index}`}
-                className="w-full h-full rounded object-cover"
-              />
-              <button
-                onClick={() => handleDeleteImage(index)}
-                className="absolute right-1 bottom-1 p-0 rounded-full w-fit cursor-pointer"
-              >
-                <AiFillDelete size={15} color="red" />
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <FiImage size={13} color="rgba(255,255,255,0.35)" />
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.35)",
+                    fontFamily: "'DM Mono', monospace",
+                  }}
+                >
+                  {menuImages.length} image{menuImages.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <GhostBtn onClick={() => setMenuImages([])} variant="danger">
+                <FiX size={12} />
+              </GhostBtn>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Unique code Field */}
-      <div className="mt-6 w-full">
-        <label className="block text-sm text-gray-400 mb-2">
-          Your Unique Code
+            {/* thumbnails */}
+            <motion.div
+              layout
+              style={{ display: "flex", flexWrap: "wrap", gap: 12 }}
+            >
+              <AnimatePresence>
+                {menuImages.map((file, i) => (
+                  <ThumbCard
+                    key={`${file.name}-${i}`}
+                    file={file}
+                    index={i}
+                    onDelete={handleDeleteImage}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── unique code input ── */}
+      <div>
+        <label
+          style={{
+            display: "block",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.4)",
+            marginBottom: 8,
+            fontFamily: "'DM Mono', monospace",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
+          Unique Code
         </label>
         <input
           type="text"
-          value={uniqueCode || ""}
+          value={uniqueCode}
           onChange={(e) => setUniqueCode(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          onFocus={() => setInputFocused(true)}
+          onBlur={() => setInputFocused(false)}
+          placeholder="Enter your unique code…"
+          style={{
+            width: "100%",
+            padding: "11px 14px",
+            borderRadius: 12,
+            border: `0.5px solid ${inputFocused ? "rgba(167,139,250,0.5)" : "rgba(255,255,255,0.1)"}`,
+            background: inputFocused
+              ? "rgba(88,28,135,0.12)"
+              : "rgba(255,255,255,0.04)",
+            color: "rgba(255,255,255,0.85)",
+            fontSize: 14,
+            fontFamily: "'DM Sans', sans-serif",
+            outline: "none",
+            transition: "border-color 0.2s, background 0.2s",
+            boxSizing: "border-box",
+          }}
         />
-        {/* <div className="flex items-center gap-2 mt-2">
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText(mentionedUniqueCode || "");
-              toast.success("Unique code copied!");
-            }}
-            className="text-sm px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-800 transition text-white"
-          >
-            Copy Code
-          </button>
-          <span className="text-xs text-gray-400">
-            Click to copy your unique code again.
-          </span>
-        </div> */}
       </div>
 
-      {/* Submit Button */}
-      {menuImages.length > 0 && (
-        <button
-          onClick={(e) => handleSubmit(e)}
-          className="mt-6 cursor-pointer px-6 py-3 bg-green-800 rounded-lg shadow-lg hover:bg-green-900 transition-all duration-300"
-        >
-          {isLoading ? <BtnSnipper /> : "Confirm Selection"}
-        </button>
-      )}
-    </div>
+      {/* ── submit ── */}
+      <AnimatePresence>
+        {menuImages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.25 }}
+          >
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={handleSubmit}
+              disabled={!canSubmit || isLoading}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "12px 24px",
+                borderRadius: 14,
+                border: canSubmit
+                  ? "0.5px solid rgba(74,222,128,0.3)"
+                  : "0.5px solid rgba(255,255,255,0.08)",
+                background: canSubmit
+                  ? "rgba(20,83,45,0.45)"
+                  : "rgba(255,255,255,0.04)",
+                color: canSubmit
+                  ? "rgba(134,239,172,0.95)"
+                  : "rgba(255,255,255,0.25)",
+                fontSize: 14,
+                fontWeight: 500,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: canSubmit ? "pointer" : "not-allowed",
+                transition: "background 0.2s, border-color 0.2s, color 0.2s",
+              }}
+            >
+              {isLoading ? (
+                <BtnSnipper />
+              ) : (
+                <>
+                  <FiCheck size={15} />
+                  Confirm & Create Menu
+                </>
+              )}
+            </motion.button>
+
+            {!uniqueCode.trim() && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{
+                  margin: "8px 0 0",
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.25)",
+                  fontFamily: "'DM Mono', monospace",
+                }}
+              >
+                Enter your unique code to enable submission
+              </motion.p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
 export default MenuTemplatesComponent;
-
-// import { useEffect, useState } from "react";
-// import { useNavigate, useSearchParams } from "react-router-dom";
-// import { AiFillDelete } from "react-icons/ai";
-// import { FiUploadCloud } from "react-icons/fi";
-// import toast from "react-hot-toast";
-// import { CustomError } from "../../types/types";
-// import { useCreateSoldServiceMutation } from "../../store/apiSlice/Soldslice";
-// import BtnSnipper from "../global/BtnSnipper";
-
-// const MenuTemplatesComponent: React.FC = () => {
-//   const navigate = useNavigate();
-//   const [menuImages, setMenuImages] = useState<string[]>([]);
-
-//   const convertToBase64 = (file: File): Promise<string> => {
-//     return new Promise((resolve, reject) => {
-//       const reader = new FileReader();
-//       reader.readAsDataURL(file);
-//       reader.onload = () => resolve(reader.result as string);
-//       reader.onerror = (error) => reject(error);
-//     });
-//   };
-
-//   const handleImageUpload = async (
-//     event: React.ChangeEvent<HTMLInputElement>
-//   ) => {
-//     if (event.target.files) {
-//       const filesArray = Array.from(event.target.files);
-//       const base64Images = await Promise.all(
-//         filesArray.map((file) => convertToBase64(file))
-//       );
-
-//       setMenuImages((prevImages) => [...prevImages, ...base64Images]);
-//     }
-//   };
-
-//   const handleDeleteImage = (index: number) => {
-//     setMenuImages(menuImages.filter((_, i) => i !== index));
-//   };
-
-//   // Handle create menu service
-//   const [uniqueCode, setUniqueCode] = useState<string>("");
-
-//   const [searchParams] = useSearchParams();
-
-//   //=> Get sevice type query
-//   const service_type = searchParams.get("service-type");
-
-//   const [createSoldService, { isLoading, isError, isSuccess, error, data }] =
-//     useCreateSoldServiceMutation();
-//   console.log(data);
-//   console.log(error);
-//   console.log(isError);
-
-//   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-//     e.preventDefault();
-//     if (!service_type) {
-//       toast.error("There is no type provided");
-//     } else {
-//       try {
-//         const response = await createSoldService({
-//           type: service_type,
-//           content: menuImages,
-//           vCardUi: "",
-//           uniqueCode,
-//         }).unwrap();
-
-//         console.log("Sending Data:", response.message);
-//       } catch (error) {
-//         console.log(`Error From Client Create Product ${error}`);
-//       }
-//     }
-//   };
-
-//   const customError = error as CustomError;
-
-//   useEffect(() => {
-//     if (isError && customError?.data?.message) {
-//       toast.error(customError.data.message);
-//     } else if (isSuccess) {
-//       navigate(`/client-dashboard`);
-//     }
-//   }, [isError, isSuccess, error, data]);
-//   return (
-//     <div className="flex flex-col items-center ">
-//       {/* Upload Button */}
-//       <div className="mb-6 w-full">
-//         <div className="border-2 border-dashed rounded-lg p-4 text-center w-[100%] cursor-pointer border-purple-400 bg-purple-900/20">
-//           <label
-//             htmlFor="image"
-//             className="text-gray-300 cursor-pointer flex flex-col-reverse"
-//           >
-//             <span>Click here to Upload images</span>
-//             <FiUploadCloud size={30} className="mx-auto text-purple-500" />
-//           </label>
-//           <input
-//             type="file"
-//             id="image"
-//             accept="image/*"
-//             multiple
-//             className="hidden"
-//             onChange={handleImageUpload}
-//           />
-//         </div>
-//       </div>
-//       {menuImages.length > 0 && (
-//         <div className="flex gap-2 flex-wrap w-full">
-//           {menuImages.map((image, index) => (
-//             <div
-//               className="mt-4 w-[calc(50%-8px)] aspect-[1/1] md:aspect-[1/1] relative"
-//               key={index}
-//             >
-//               <img
-//                 src={image}
-//                 alt=""
-//                 className="w-full h-full rounded object-cover"
-//               />
-//               <button
-//                 onClick={() => handleDeleteImage(index)}
-//                 className="absolute right-1 bottom-1 p-0 rounded-full w-fit cursor-pointer"
-//               >
-//                 <AiFillDelete size={15} color="red" />
-//               </button>
-//             </div>
-//           ))}
-//         </div>
-//       )}
-//       {/* Unique code Field */}
-//       <div className="mt-6">
-//         <label className="block text-sm text-gray-400 mb-2">
-//           Past Your Unique Code
-//         </label>
-//         <input
-//           type="text"
-//           value={uniqueCode}
-//           onChange={(e) => setUniqueCode(e.target.value)}
-//           className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//         />
-//       </div>
-//       {/* Confirm Button */}
-//       {menuImages.length > 0 && (
-//         <button
-//           onClick={(e) => handleSubmit(e)}
-//           className="mt-6 cursor-pointer px-6 py-3 bg-green-700 rounded-lg shadow-lg hover:bg-green-900 transition-all duration-300"
-//         >
-//           {isLoading ? <BtnSnipper /> : "Confirm Selection"}
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default MenuTemplatesComponent;

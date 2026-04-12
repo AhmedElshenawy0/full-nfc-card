@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { FaArrowLeft } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import Typewriter from "typewriter-effect";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   useDeleteCardMutation,
   useGetAllCardsQuery,
@@ -10,11 +9,495 @@ import {
 import Snipper from "../../components/global/Snipper";
 import { Card, CustomError } from "../../types/types";
 import BtnSnipper from "../../components/global/BtnSnipper";
-import { FaUnlockAlt } from "react-icons/fa";
 import copy from "copy-to-clipboard";
+import {
+  FiLink,
+  FiEye,
+  FiAlertTriangle,
+  FiX,
+  FiCreditCard,
+  FiDownload,
+} from "react-icons/fi";
+import { FaUnlockAlt } from "react-icons/fa";
+import { createPortal } from "react-dom";
+import QRCodeStyling from "qr-code-styling";
 
+// ─── tiny hover button ────────────────────────────────────────────────────────
+interface ActionBtnProps {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  variant: "red" | "blue" | "green";
+}
+
+const ActionBtn = ({ onClick, icon, label, variant }: ActionBtnProps) => {
+  const [hov, setHov] = useState(false);
+  const map = {
+    red: {
+      bg: "rgba(127,29,29,0.35)",
+      bgH: "rgba(127,29,29,0.55)",
+      border: "rgba(239,68,68,0.25)",
+      color: "rgba(252,165,165,0.9)",
+    },
+    blue: {
+      bg: "rgba(30,58,138,0.35)",
+      bgH: "rgba(30,58,138,0.55)",
+      border: "rgba(96,165,250,0.25)",
+      color: "rgba(147,197,253,0.9)",
+    },
+    green: {
+      bg: "rgba(20,83,45,0.35)",
+      bgH: "rgba(20,83,45,0.55)",
+      border: "rgba(74,222,128,0.25)",
+      color: "rgba(134,239,172,0.9)",
+    },
+  }[variant];
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: "9px 0",
+        borderRadius: 10,
+        border: `0.5px solid ${map.border}`,
+        background: hov ? map.bgH : map.bg,
+        color: map.color,
+        fontSize: 12,
+        fontWeight: 500,
+        fontFamily: "'DM Sans', sans-serif",
+        cursor: "pointer",
+        transition: "background 0.15s",
+      }}
+    >
+      {icon}
+      {label}
+    </motion.button>
+  );
+};
+
+// ─── category pill ────────────────────────────────────────────────────────────
+const Pill = ({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => {
+  const [hov, setHov] = useState(false);
+  const display =
+    label === "vCard" ? "Personal Card" : label === "menu" ? "Menu" : label;
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        padding: "7px 16px",
+        borderRadius: 99,
+        border: `0.5px solid ${active ? "rgba(74,222,128,0.4)" : "rgba(255,255,255,0.08)"}`,
+        background: active
+          ? "rgba(20,83,45,0.45)"
+          : hov
+            ? "rgba(255,255,255,0.06)"
+            : "rgba(255,255,255,0.03)",
+        color: active ? "rgba(134,239,172,0.95)" : "rgba(255,255,255,0.45)",
+        fontSize: 12,
+        fontWeight: 500,
+        fontFamily: "'DM Sans', sans-serif",
+        cursor: "pointer",
+        transition: "all 0.15s",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {display}
+    </button>
+  );
+};
+
+// ─── confirm modal via portal ─────────────────────────────────────────────────
+interface ConfirmModalProps {
+  card: Card;
+  isUnassigning: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}
+
+const ConfirmModal = ({
+  card,
+  isUnassigning,
+  onConfirm,
+  onClose,
+}: ConfirmModalProps) =>
+  createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "rgba(0,0,0,0.7)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.93, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.93, y: 12 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 380,
+          background: "rgba(12,12,16,0.98)",
+          borderRadius: 20,
+          border: "0.5px solid rgba(255,255,255,0.1)",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.7)",
+        }}
+      >
+        {/* header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 18px 14px",
+            borderBottom: "0.5px solid rgba(255,255,255,0.07)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 9,
+                background: "rgba(127,29,29,0.3)",
+                border: "0.5px solid rgba(239,68,68,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <FiAlertTriangle size={14} color="rgba(252,165,165,0.8)" />
+            </div>
+            <div>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#fff",
+                  fontFamily: "'Syne', sans-serif",
+                }}
+              >
+                Deactivate Card
+              </p>
+              <p
+                style={{
+                  margin: "2px 0 0",
+                  fontSize: 11,
+                  color: "rgba(255,255,255,0.3)",
+                  fontFamily: "'DM Mono', monospace",
+                }}
+              >
+                #{card.id}
+              </p>
+            </div>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={onClose}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 7,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(255,255,255,0.05)",
+              border: "0.5px solid rgba(255,255,255,0.08)",
+              color: "rgba(255,255,255,0.4)",
+              cursor: "pointer",
+            }}
+          >
+            <FiX size={13} />
+          </motion.button>
+        </div>
+
+        {/* body */}
+        <div style={{ padding: "18px 18px 20px" }}>
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: 13,
+              color: "rgba(255,255,255,0.7)",
+              lineHeight: 1.6,
+            }}
+          >
+            This will disconnect{" "}
+            <span style={{ color: "#fff", fontWeight: 500 }}>
+              {card.client?.first_name} {card.client?.last_name}
+            </span>{" "}
+            from this card.
+          </p>
+          <p
+            style={{
+              margin: "0 0 20px",
+              fontSize: 12,
+              color: "rgba(255,255,255,0.3)",
+            }}
+          >
+            This action cannot be undone.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <ActionBtn
+              onClick={onConfirm}
+              variant="red"
+              icon={isUnassigning ? <BtnSnipper /> : <FaUnlockAlt size={12} />}
+              label={isUnassigning ? "Deactivating…" : "Yes, Deactivate"}
+            />
+            <ActionBtn
+              onClick={onClose}
+              variant="green"
+              icon={<FiX size={13} />}
+              label="Cancel"
+            />
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body,
+  );
+
+// ─── card tile ────────────────────────────────────────────────────────────────
+interface CardTileProps {
+  card: Card;
+  index: number;
+  onDeactivate: (card: Card) => void;
+  onViewService: (card: Card) => void;
+  onCopyLink: (card: Card) => void;
+  onDownloadQr: (card: Card) => void;
+}
+
+const CardTile = ({
+  card,
+  index,
+  onDeactivate,
+  onViewService,
+  onCopyLink,
+  onDownloadQr,
+}: CardTileProps) => {
+  const isMenu = card.nfc_type === "menu";
+  const hasClient = !!card.client_id;
+  const hasService = !!card.sold_service?.id;
+
+  const accentColor = isMenu
+    ? "linear-gradient(90deg,#14532d,#16a34a,transparent)"
+    : "linear-gradient(90deg,#581c87,#7c3aed,transparent)";
+
+  const typeLabel =
+    card.nfc_type === "vCard"
+      ? "Personal Card"
+      : card.nfc_type === "menu"
+        ? "Menu"
+        : card.nfc_type;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        delay: index * 0.05,
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      whileHover={{ y: -2, transition: { duration: 0.18 } }}
+      style={{
+        borderRadius: 18,
+        overflow: "hidden",
+        background: "rgba(255,255,255,0.04)",
+        backdropFilter: "blur(12px)",
+        border: "0.5px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 1px 0 rgba(255,255,255,0.05) inset",
+        position: "relative",
+      }}
+    >
+      {/* accent bar */}
+      <div style={{ height: 2, background: accentColor }} />
+
+      <div style={{ padding: "16px 16px 18px" }}>
+        {/* header row */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            marginBottom: 14,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 10,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: isMenu
+                  ? "rgba(20,83,45,0.28)"
+                  : "rgba(88,28,135,0.28)",
+                border: `0.5px solid ${isMenu ? "rgba(74,222,128,0.2)" : "rgba(192,132,252,0.2)"}`,
+              }}
+            >
+              <FiCreditCard size={15} color={isMenu ? "#4ade80" : "#c084fc"} />
+            </div>
+            <div>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#fff",
+                  fontFamily: "'Syne', sans-serif",
+                }}
+              >
+                {typeLabel}
+              </p>
+              <p
+                style={{
+                  margin: "2px 0 0",
+                  fontSize: 10,
+                  color: "rgba(255,255,255,0.3)",
+                  fontFamily: "'DM Mono', monospace",
+                }}
+              >
+                #{index + 1} · id {card.id}
+              </p>
+            </div>
+          </div>
+
+          {/* status badge */}
+          <span
+            style={{
+              fontSize: 10,
+              padding: "3px 9px",
+              borderRadius: 99,
+              fontFamily: "'DM Mono', monospace",
+              letterSpacing: "0.08em",
+              background: hasClient
+                ? "rgba(20,83,45,0.25)"
+                : "rgba(127,29,29,0.2)",
+              color: hasClient
+                ? "rgba(74,222,128,0.8)"
+                : "rgba(252,165,165,0.7)",
+              border: `0.5px solid ${hasClient ? "rgba(74,222,128,0.2)" : "rgba(239,68,68,0.2)"}`,
+            }}
+          >
+            {hasClient ? "Active" : "Inactive"}
+          </span>
+        </div>
+
+        {/* divider */}
+        <div
+          style={{
+            height: "0.5px",
+            background: "rgba(255,255,255,0.06)",
+            marginBottom: 12,
+          }}
+        />
+
+        {/* owner */}
+        <div style={{ marginBottom: 14 }}>
+          <p
+            style={{
+              margin: "0 0 2px",
+              fontSize: 10,
+              color: "rgba(255,255,255,0.25)",
+              fontFamily: "'DM Mono', monospace",
+              textTransform: "uppercase",
+              letterSpacing: "0.07em",
+            }}
+          >
+            Owner
+          </p>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 13,
+              color: hasClient
+                ? "rgba(255,255,255,0.75)"
+                : "rgba(239,68,68,0.7)",
+              fontStyle: hasClient ? "normal" : "italic",
+            }}
+          >
+            {hasClient
+              ? `${card.client?.first_name} ${card.client?.last_name}`
+              : "Not assigned"}
+          </p>
+        </div>
+
+        {/* actions */}
+        <div style={{ display: "flex", gap: 8 }}>
+          {hasClient && (
+            <ActionBtn
+              onClick={() => onDeactivate(card)}
+              icon={<FaUnlockAlt size={11} />}
+              label="Deactivate"
+              variant="red"
+            />
+          )}
+
+          {!hasClient && !hasService ? (
+            <>
+              <ActionBtn
+                onClick={() => onCopyLink(card)}
+                icon={<FiLink size={12} />}
+                label="Copy Link"
+                variant="blue"
+              />
+              <ActionBtn
+                onClick={() => onDownloadQr(card)}
+                icon={<FiDownload size={12} />}
+                label="Download QR"
+                variant="green"
+              />
+            </>
+          ) : (
+            <ActionBtn
+              onClick={() => onViewService(card)}
+              icon={<FiEye size={12} />}
+              label="View"
+              variant="blue"
+            />
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─── main ─────────────────────────────────────────────────────────────────────
 const Cards = () => {
-  const navigate = useNavigate();
   const [shouldFetchCards, setShouldFetchCards] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
@@ -24,28 +507,27 @@ const Cards = () => {
     skip: !shouldFetchCards,
   });
 
-  console.log(data);
-
   useEffect(() => {
     setShouldFetchCards(true);
   }, []);
 
-  const categories: any[] = [
+  const categories: string[] = [
     "All",
-    ...new Set(data?.cards?.map((card: Card) => card.nfc_type)),
+    ...new Set(data?.cards?.map((c: Card) => c.nfc_type) as any[]),
   ];
 
   const sortedCards = useMemo(() => {
     if (!Array.isArray(data?.cards)) return [];
-
     const filtered =
       selectedCategory === "All"
         ? data.cards
-        : data.cards.filter((card: Card) => card.nfc_type === selectedCategory);
-
-    return filtered.slice().sort((a: any, b: any) => {
-      return Number(Boolean(b.client)) - Number(Boolean(a.client));
-    });
+        : data.cards.filter((c: Card) => c.nfc_type === selectedCategory);
+    return filtered
+      .slice()
+      .sort(
+        (a: any, b: any) =>
+          Number(Boolean(b.client)) - Number(Boolean(a.client)),
+      );
   }, [data?.cards, selectedCategory]);
 
   const [deleteCard, { isSuccess, isError, error, isLoading: isUnassigning }] =
@@ -53,219 +535,263 @@ const Cards = () => {
 
   const handleDeleteCard = async (card: Card) => {
     if (!card?.client_id) {
-      toast.error("This card has not been assigned to any client.");
+      toast.error("Card has no assigned client.");
       return;
     }
     if (isUnassigning) return;
-
     try {
       await deleteCard(card.unique_code).unwrap();
       setShowModal(false);
-    } catch (err) {
-      console.error("Delete Error:", err);
-      toast.error("Failed to Deactivate card. Please try again.");
+    } catch {
+      toast.error("Failed to deactivate card.");
     }
   };
 
   const customError = error as CustomError;
-
   useEffect(() => {
-    if (isError) {
-      const msg =
-        (customError?.data?.message as string) || "Deactivate failed.";
-      toast.error(msg);
-    } else if (isSuccess) {
-      toast.success("Card Deactivated successfully.");
-    }
+    if (isError)
+      toast.error(
+        (customError?.data?.message as string) || "Deactivate failed.",
+      );
+    else if (isSuccess) toast.success("Card deactivated successfully.");
   }, [isError, isSuccess, error]);
 
-  const viewService = (card: any) => {
-    if (!card.client_id) return toast.error("Invalid card");
-    if (card?.sold_service?.type === "vCard") {
-      window.open(
-        `${window.location.origin}/template?id=${card?.sold_service?.id}`,
-        "_blank"
-      );
-    } else if (card?.sold_service.type === "menu") {
-      window.open(
-        `${window.location.origin}/menu-template?id=${card?.sold_service?.id}`,
-        "_blank"
-      );
+  const viewService = (card: Card) => {
+    if (!card.client_id) {
+      toast.error("Invalid card");
+      return;
+    }
+    const path =
+      card?.sold_service?.type === "vCard"
+        ? `/template?id=${card?.sold_service.id}`
+        : card?.sold_service?.type === "menu"
+          ? `/menu-template?id=${card?.sold_service.id}`
+          : null;
+    if (path) window.open(`${window.location.origin}${path}`, "_blank");
+  };
+
+  const copyLink = (card: Card) => {
+    if (!card.unique_code) {
+      toast.error("Invalid card");
+      return;
+    }
+    const success = copy(
+      `${window.location.origin}?unique_code=${card.unique_code}`,
+    );
+    success ? toast.success("Link copied!") : toast.error("Failed to copy");
+  };
+
+  // ─── download QR ────────────────────────────────────────────────────────────
+  // ── circle-crop any image URL → base64 ──────────────────────────
+  const circleImage = (src: string, size = 160): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+
+        // clip to circle
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
+  const downloadQr = async (card: Card) => {
+    if (!card.unique_code) {
+      toast.error("Invalid card");
+      return;
+    }
+
+    const qrUrl = `https://signuptap.com/?unique_code=${card?.unique_code}`;
+
+    try {
+      // 1. crop logo to circle first
+      const circularLogo = await circleImage("/elrateb.jpg", 160);
+
+      // 2. build QR with circular logo
+      const qrCode = new QRCodeStyling({
+        width: 2048, // ← high res
+        height: 2048,
+        data: qrUrl,
+        margin: 20, // ← scale margin with size
+
+        dotsOptions: {
+          color: "#4ade80",
+          type: "extra-rounded",
+        },
+
+        cornersSquareOptions: {
+          color: "#4ade80",
+          type: "extra-rounded",
+        },
+
+        cornersDotOptions: {
+          color: "#16a34a",
+          type: "dot",
+        },
+
+        backgroundOptions: {
+          color: "#0c0c10",
+        },
+
+        image: circularLogo,
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 12, // ← scale with size
+          imageSize: 0.3, // ← lower this, 0.5 is too big and kills scannability
+          saveAsBlob: true,
+        },
+
+        qrOptions: {
+          errorCorrectionLevel: "H",
+        },
+      });
+
+      // qrCode.download({
+      //   name: `qr-card-${card.id}`,
+      //   extension: "png", // ← PNG because you have a logo
+      // });
+
+      qrCode.download({
+        name: `qr-card-${card.id}`,
+        extension: "svg",
+      });
+
+      toast.success("QR code downloaded!");
+    } catch {
+      toast.error("Failed to generate QR code.");
     }
   };
 
+  const activeCount = sortedCards.filter((c: Card) => c.client_id).length;
+
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row items-center justify-between">
-        <button
-          onClick={() => navigate("/admin-dashboard")}
-          className="p-2 bg-green-950 rounded-full absolute top-8 right-6 text-gray-400 hover:text-white transition"
-        >
-          <FaArrowLeft color="white" />
-        </button>
-        <h1 className="text-xl font-bold mb-4 text-center sm:text-left">
-          <Typewriter
-            options={{
-              strings: ["Manage Your Cards", "Customize & Control"],
-              autoStart: true,
-              loop: true,
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* ── header ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#fff",
+              fontFamily: "'Syne', sans-serif",
+              letterSpacing: "-0.3px",
             }}
-          />
-        </h1>
-      </div>
-
-      <div className="text-sm text-gray-300 mb-4">
-        Total Cards: {sortedCards?.length || 0}
-      </div>
-
-      <div className="flex flex-wrap gap-4 mb-8 justify-center sm:justify-center">
-        {categories.map((cardType) => (
-          <button
-            key={cardType}
-            onClick={() => setSelectedCategory(cardType)}
-            className={`px-3 py-2 min-w-[22%] rounded-full transition ${
-              selectedCategory === cardType
-                ? "bg-green-700 text-white"
-                : "bg-gray-700 hover:bg-gray-600 text-white"
-            }`}
           >
-                      {cardType === "vCard" ? "Personal Card" : cardType}
+            Manage Cards
+          </h1>
+          <p
+            style={{
+              margin: "3px 0 0",
+              fontSize: 12,
+              color: "rgba(255,255,255,0.3)",
+              fontFamily: "'DM Mono', monospace",
+            }}
+          >
+            {sortedCards.length} total · {activeCount} active
+          </p>
+        </div>
+      </div>
 
-          </button>
+      {/* ── category pills ── */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {categories.map((cat) => (
+          <Pill
+            key={cat}
+            label={cat}
+            active={selectedCategory === cat}
+            onClick={() => setSelectedCategory(cat)}
+          />
         ))}
       </div>
 
+      {/* ── grid ── */}
       {isLoading ? (
-        <Snipper />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Array.isArray(sortedCards) &&
-            sortedCards.map((card, i) => (
-              <div
-                key={card.id}
-                className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all border border-gray-800"
-              >
-                <div className="absolute top-4 right-4 text-xs text-gray-500">
-                  #{i + 1}
-                </div>
-                <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wide">
-                  {card.nfc_type === "vCard" ? "Profile card" :card.nfc_type === "menu" ? "Menu" : "" }
-                </h2>
-                <p className="text-gray-400 mb-1 capitalize">
-                  <span className="font-medium text-white">Type:</span>{" "}
-                  {card.nfc_type === "vCard" ? "Profile card" :card.nfc_type === "menu" ? "Menu" : "" }
-                </p>
-                <p className="text-gray-400 capitalize">
-                  <span className="font-medium text-white ">Owner:</span>{" "}
-                  {card.client?.first_name ? (
-                    `${card.client.first_name} ${card.client.last_name}`
-                  ) : (
-                    <span className="italic text-red-400 font-semibold">
-                      Not Active
-                    </span>
-                  )}
-                </p>
-
-                <div className="flex flex-col gap-2 mt-6 w-full">
-                  {card?.client_id ? (
-                    <button
-                      onClick={() => {
-                        setSelectedCard(card);
-                        setShowModal(true);
-                      }}
-                      className="w-full font-medium bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-xl flex justify-center items-center gap-2"
-                    >
-                      <FaUnlockAlt />
-
-                      <span className="text-sm">Deactivate</span>
-                    </button>
-                  ) : (
-                    ""
-                  )}
-                  {!card?.client_id && !card?.sold_service?.id ? (
-                    <button
-                      onClick={() => {
-                        if (!card.unique_code)
-                          return toast.error("Invalid card");
-
-                        const link = `${window.location.origin}?unique_code=${card.unique_code}`;
-
-                        const success = copy(link);
-
-                        if (success) {
-                          toast.success("Link copied to clipboard 🔗");
-                        } else {
-                          toast.error("Failed to copy link");
-                        }
-                      }}
-                      className="w-full font-medium bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-xl flex justify-center items-center gap-2"
-                    >
-                      🔗 <span className="text-sm">Generate Link</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => viewService(card)}
-                      className="w-full font-medium bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-xl flex justify-center items-center gap-2"
-                    >
-                      <span className="text-sm">View</span>
-                    </button>
-                  )}
-
-                  {/* Deactivate card */}
-                  {showModal && selectedCard?.id === card.id && (
-                    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
-                      <div className="bg-white text-black rounded-xl p-6 w-[90%] max-w-md shadow-lg">
-                        <h2 className="text-xl font-semibold mb-4">
-                          Are you sure you want to deactivate this card?
-                        </h2>
-                        <p className="text-sm text-gray-500 mb-6">
-                          This will disconnect the assigned client. This action
-                          cannot be undone.
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() => setShowModal(false)}
-                            className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCard(card)}
-                            disabled={isUnassigning}
-                            className={`px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition ${
-                              isUnassigning
-                                ? "cursor-not-allowed opacity-50"
-                                : ""
-                            }`}
-                          >
-                            {isUnassigning ? (
-                              <div className="flex items-center justify-center gap-2 text-center">
-                                <BtnSnipper />
-                                Deactivating...
-                              </div>
-                            ) : (
-                              "Deactivate"
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "48px 0",
+          }}
+        >
+          <Snipper />
         </div>
+      ) : sortedCards.length === 0 ? (
+        <p
+          style={{
+            textAlign: "center",
+            color: "rgba(255,255,255,0.3)",
+            padding: "48px 0",
+            fontSize: 13,
+          }}
+        >
+          No cards available.{" "}
+          <Link
+            to="/admin/add-card"
+            style={{ color: "rgba(96,165,250,0.8)", textDecoration: "none" }}
+          >
+            Add one →
+          </Link>
+        </p>
+      ) : (
+        <motion.div
+          layout
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+            gap: 14,
+          }}
+        >
+          <AnimatePresence>
+            {sortedCards.map((card: Card, i: number) => (
+              <CardTile
+                key={card.id}
+                card={card}
+                index={i}
+                onDeactivate={(c) => {
+                  setSelectedCard(c);
+                  setShowModal(true);
+                }}
+                onViewService={viewService}
+                onCopyLink={copyLink}
+                onDownloadQr={downloadQr}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
 
-      {sortedCards?.length === 0 && (
-        <p className="text-center text-gray-400 mt-12">
-          No cards available.{" "}
-          <Link to="/admin/add-card" className="text-blue-400 hover:underline">
-            Add a new card
-          </Link>
-          .
-        </p>
-      )}
+      {/* ── confirm modal ── */}
+      <AnimatePresence>
+        {showModal && selectedCard && (
+          <ConfirmModal
+            card={selectedCard}
+            isUnassigning={isUnassigning}
+            onConfirm={() => handleDeleteCard(selectedCard)}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

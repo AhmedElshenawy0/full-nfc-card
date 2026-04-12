@@ -17,182 +17,203 @@ const SecondUI = ({ data }: { data: any }) => {
   const encodedAddress = encodeURIComponent(data?.address || "");
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
 
-  // Default text and btn color
-  const [textColor, setTextColor] = useState("text-black");
-  const [textBtnColor, setTextBtnColor] = useState("text-black");
+  const [textColor, setTextColor] = useState("text-white");
+  const [textBtnColor, setTextBtnColor] = useState("text-white");
 
   useEffect(() => {
-    // check if color is dark Update text color
-
     setTextColor(isDark(data?.mainBackground) ? "text-white" : "text-black");
     setTextBtnColor(
-      isDark(data?.buttonBackground) ? "text-white" : "text-black"
+      isDark(data?.buttonBackground) ? "text-white" : "text-black",
     );
   }, [data?.mainBackground, data?.buttonBackground]);
 
-  const lightColor = tinycolor(data?.mainBackground).lighten(60).toHexString();
+  const accentColor = data?.mainBackground || "#7c3aed";
+  const btnColor = data?.buttonBackground;
+  const lightColor = tinycolor(accentColor).lighten(35).toHexString();
+  const dimColor = tinycolor(accentColor).setAlpha(0.12).toRgbString();
+  const borderColor = tinycolor(accentColor).setAlpha(0.25).toRgbString();
+  const conicGradient = `conic-gradient(${accentColor}, ${lightColor}, #ec4899, ${accentColor})`;
+
   return (
-    <div className=" max-w-[500px] mx-auto min-h-screen bg-gradient-to-b from-gray-900 to-black text-white shadow-2xl p-6">
-      {/* Profile Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+    <div
+      style={{
+        background: data?.mainBackground
+          ? `linear-gradient(160deg, #0f0a1e 0%, ${tinycolor(data.mainBackground).darken(20).toHexString()} 50%, #0a0a0a 100%)`
+          : "linear-gradient(160deg, #0f0a1e 0%, #1a0f2e 50%, #0a0a0a 100%)",
+      }}
+      className="max-w-[500px] mx-auto min-h-screen text-white overflow-hidden pb-8 relative"
+    >
+      {/* Ambient glow */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none"
         style={{
-          backgroundImage: data?.buttonBackground
-            ? `linear-gradient(to bottom right, ${data?.mainBackground},  #1a1a1a)`
-            : "",
-          border: data?.buttonBackground
-            ? `1px solid ${data?.buttonBackground}`
-            : "",
+          background: `radial-gradient(circle, ${tinycolor(accentColor).setAlpha(0.2).toRgbString()} 0%, transparent 70%)`,
         }}
-        className="relative bg-gradient-to-b from-purple-800 to-gray-900 p-6 pb-16 text-center shadow-2xl rounded-xl"
+      />
+
+      {/* Hero / Profile */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-12 pb-6 px-8 text-center relative"
       >
-        <div className="relative flex justify-center">
+        {/* Avatar with conic ring */}
+        <div className="relative inline-block mb-4">
+          <div
+            className="absolute inset-[-4px] rounded-full"
+            style={{ background: conicGradient }}
+          />
           <img
             src={data?.image}
             alt="Profile"
-            style={{
-              border: data?.mainBackground ? `8px solid ${lightColor}` : "",
-            }}
-            className="w-48 h-48 object-cover object-top rounded-full border-8 border-purple-400 shadow-xl transform hover:scale-110 transition-transform duration-300"
+            className="relative w-28 h-28 rounded-full object-cover object-top border-[3px] border-[#0f0a1e] z-10 hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <h2
-          className={`text-3xl font-extrabold mt-6 ${
-            data?.buttonBackground ? textColor : ""
-          } drop-shadow-lg`}
-        >
+
+        {/* Job badge */}
+        {data?.job && (
+          <div className="mb-3">
+            <span
+              className="text-[11px] px-3 py-1 rounded-full border tracking-widest uppercase"
+              style={{ color: lightColor, background: dimColor, borderColor }}
+            >
+              {data.job}
+            </span>
+          </div>
+        )}
+
+        <h2 className={`text-2xl font-medium tracking-tight mb-1 ${textColor}`}>
           {data?.name}
         </h2>
-        <p
-          style={{ color: data?.mainBackground ? lightColor : "" }}
-          className="text-purple-300 text-lg mt-2 font-semibold"
-        >
-          {data?.job}
-        </p>
       </motion.div>
 
-      {/* Info Section */}
-      <div className="p-6 text-center bg-opacity-10 backdrop-blur-md rounded-lg ">
+      {/* Divider */}
+      <div
+        className="h-px mx-8 mb-1"
+        style={{
+          background: `linear-gradient(to right, transparent, ${borderColor}, transparent)`,
+        }}
+      />
+
+      {/* Bio */}
+      <div
+        className="mx-6 my-4 p-4 rounded-xl"
+        style={{ background: dimColor, border: `0.5px solid ${borderColor}` }}
+      >
         <p
-          style={{ color: data?.mainBackground ? lightColor : "" }}
-          className="text-purple-300 font-semibold text-lg italic leading-relaxed w-full"
+          className={`text-sm italic text-center leading-relaxed mb-2 ${textColor}`}
+          style={{ color: lightColor }}
         >
-          {data?.bio}
+          "{data?.bio}"
         </p>
-        <p className="text-sm mt-3 text-gray-300 leading-relaxed">
+        <p className="text-xs text-center leading-relaxed text-slate-500">
           {data?.about}
         </p>
       </div>
 
-      {/* Contact Section */}
-      <div className="p-6">
-        <h3
-          style={{ color: data?.mainBackground ? lightColor : "" }}
-          className="text-purple-400 font-semibold text-xl text-center mb-4"
+      {/* Contact */}
+      <p
+        className="text-[11px] tracking-widest uppercase px-6 mb-3 font-medium"
+        style={{ color: lightColor }}
+      >
+        Contact
+      </p>
+      <div className="px-6 flex flex-col gap-2.5">
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          href={`tel:+${data?.phone}`}
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{ background: dimColor, border: `0.5px solid ${borderColor}` }}
         >
-          Contact Info
-        </h3>
-        <div className="space-y-6">
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            href={`tel:+${data?.phone}`}
-            className="flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow-md transition"
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{
+              background: tinycolor(accentColor).setAlpha(0.2).toRgbString(),
+            }}
           >
-            <div className="flex items-center gap-3">
-              <FaPhone
-                style={{ color: data?.mainBackground ? lightColor : "" }}
-                className="text-purple-400 text-xl"
-              />
-              <span className="font-semibold italic">Phone</span>
-            </div>
-            <span
-              style={{ color: data?.mainBackground ? lightColor : "" }}
-              className="text-lg font-bold text-purple-300"
-            >
-              {data?.phone}
-            </span>
-          </motion.a>
+            <FaPhone style={{ color: lightColor, fontSize: 13 }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-slate-500 mb-0.5">Phone</p>
+            <p className={`text-sm font-medium ${textColor}`}>{data?.phone}</p>
+          </div>
+          <span className="text-slate-600 text-lg">›</span>
+        </motion.a>
 
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            href={mapsUrl}
-            target="_blank"
-            className="flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow-mdtransition"
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          href={mapsUrl}
+          target="_blank"
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{ background: dimColor, border: `0.5px solid ${borderColor}` }}
+        >
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{
+              background: tinycolor(accentColor).setAlpha(0.2).toRgbString(),
+            }}
           >
-            <div className="flex items-center gap-3">
-              <FiMapPin
-                style={{ color: data?.mainBackground ? lightColor : "" }}
-                className="text-purple-400 text-xl"
-              />
-              <span className="font-semibold italic">Address</span>
-            </div>
-            <span
-              style={{ color: data?.mainBackground ? lightColor : "" }}
-              className="text-md font-bold text-purple-300"
-            >
-              View Map
-            </span>
-          </motion.a>
-        </div>
+            <FiMapPin style={{ color: lightColor, fontSize: 13 }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-slate-500 mb-0.5">Address</p>
+            <p className={`text-sm font-medium ${textColor}`}>View on map</p>
+          </div>
+          <span className="text-slate-600 text-lg">›</span>
+        </motion.a>
       </div>
 
-      {/* Social Media Links */}
-      <div className="p-6 flex justify-center space-x-6">
+      {/* Socials — only show if link exists (preserved from original) */}
+      <p
+        className="text-[11px] tracking-widest uppercase px-6 mt-5 mb-3 font-medium"
+        style={{ color: lightColor }}
+      >
+        Social
+      </p>
+      <div className="px-6 flex gap-2.5">
         {[
+          { Icon: FaFacebook, bg: "#1877f2", link: data?.facebook_link },
+          { Icon: FaTwitter, bg: "#1da1f2", link: data?.twitter_link },
+          { Icon: FaLinkedin, bg: "#0077b5", link: data?.linkedin_link },
           {
-            icon: FaFacebook,
-            color: "bg-blue-600",
-            link: data?.facebook_link,
-          },
-          {
-            icon: FaTwitter,
-            color: "bg-blue-400",
-            link: data?.twitter_link,
-          },
-          {
-            icon: FaLinkedin,
-            color: "bg-blue-700",
-            link: data?.linkedin_link,
-          },
-          {
-            icon: FaInstagram,
-            color: "bg-pink-600",
-            link: data?.instgram_link, // تأكد من الاسم الصحيح هنا!
+            Icon: FaInstagram,
+            bg: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366)",
+            link: data?.instgram_link,
           },
         ]
-          .filter((social) => !!social.link) // ✅ يظهر فقط الروابط غير الفارغة
-          .map((social, index) => (
+          .filter((s) => !!s.link)
+          .map(({ Icon, bg, link }, i) => (
             <motion.a
-              key={index}
-              whileHover={{ scale: 1.1 }}
-              href={social.link}
+              key={i}
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-12 h-12 flex items-center justify-center rounded-full shadow-md text-white ${social.color} transition-transform`}
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+              style={{ background: bg }}
             >
-              {social.icon({ size: 24 })}
+              <Icon size={15} />
             </motion.a>
           ))}
       </div>
 
-      {/* Buttons */}
-      <div className="p-6">
+      {/* Save Button */}
+      <div className="px-6 mt-5">
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => handleSaveContact(data)}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm ${textBtnColor}`}
           style={{
-            backgroundImage: data?.buttonBackground
-              ? `linear-gradient(to bottom right, ${data?.buttonBackground},  #1a1a1a)`
-              : "",
+            background: btnColor
+              ? btnColor
+              : `linear-gradient(135deg, ${accentColor}, ${lightColor})`,
           }}
-          className={`w-full flex items-center justify-center gap-3 py-3 ${
-            data?.buttonBackground ? textBtnColor : ""
-          } bg-gradient-to-r from-purple-500 to-purple-700 font-bold rounded-xl shadow-md transition`}
         >
-          <FaRegSave /> Save Contact
+          <FaRegSave size={15} />
+          Save Contact
         </motion.button>
       </div>
     </div>

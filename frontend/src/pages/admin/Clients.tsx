@@ -20,7 +20,7 @@ const Clients = () => {
   const [editedData, setEditedData] = useState<any>({});
   const [showModal, setShowModal] = useState(false);
   const [selectedClientEmail, setSelectedClientEmail] = useState<string | null>(
-    null
+    null,
   );
 
   // Get all clients
@@ -121,12 +121,12 @@ const Clients = () => {
     <div className="">
       {/* Header */}
       <div className="flex flex-col sm:flex-row-reverse items-center justify-between mb-8 space-y-4 sm:space-y-0">
-        <button
+        {/* <button
           onClick={() => navigate("/admin-dashboard")}
           className="p-2 bg-green-950 rounded-full absolute top-8 right-6 flex items-center cursor-pointer space-x-2 text-gray-400 hover:text-white transition"
         >
           <FaArrowLeft color="white" />
-        </button>
+        </button> */}
 
         <h1 className="text-xl font-bold text-center sm:text-left w-full">
           <Typewriter
@@ -298,7 +298,7 @@ const Clients = () => {
                               ? client?.soldServices
                                   .map(
                                     (soldServices: SoldService) =>
-                                      soldServices?.type
+                                      soldServices?.type,
                                   )
                                   .join(" ")
                               : "Empty"}{" "}

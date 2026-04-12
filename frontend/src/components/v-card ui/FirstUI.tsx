@@ -6,242 +6,238 @@ import {
   FaTwitter,
 } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
+import { FaRegSave } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { handleSaveContact } from "../../utils/contactFile";
 import tinycolor from "tinycolor2";
 import { isDark } from "../../utils/colorBritness";
-// import tinycolor from "tinycolor2";
-// import { isDark } from "../../utils/colorBritness";
 
 const FirstUI = ({ data }: { data: any }) => {
   const encodedAddress = encodeURIComponent(data?.address || "");
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
 
-  // Default text color and btn
   const [textColor, setTextColor] = useState("text-white");
   const [textBtnColor, setTextBtnColor] = useState("text-black");
 
   useEffect(() => {
-    // check if color is dark Update text color
-    data?.mainBackground
-      ? setTextColor(isDark(data?.mainBackground) ? "text-white" : "text-black")
-      : "";
-    data?.buttonBackground
-      ? setTextBtnColor(
-          isDark(data?.buttonBackground) ? "text-white" : "text-black"
-        )
-      : "";
+    if (data?.mainBackground)
+      setTextColor(isDark(data.mainBackground) ? "text-white" : "text-black");
+    if (data?.buttonBackground)
+      setTextBtnColor(
+        isDark(data.buttonBackground) ? "text-white" : "text-black",
+      );
   }, [data?.mainBackground, data?.buttonBackground]);
 
-  const lightColor = tinycolor(
-    data?.buttomBackground ? data?.buttomBackground : "#868822"
-  )
-    .lighten(20)
-    .toHexString();
-
-  const color = tinycolor(
-    data?.buttomBackground ? data?.buttomBackground : "#868822"
-  )
-    .lighten(40)
-    .toHexString();
+  const accentColor = data?.buttonBackground || "#b45309";
+  const lightColor = tinycolor(accentColor).lighten(20).toHexString();
+  const dimColor = tinycolor(accentColor).setAlpha(0.12).toRgbString();
+  const borderColor = tinycolor(accentColor).setAlpha(0.28).toRgbString();
+  const aboutColor = tinycolor(accentColor).lighten(35).toHexString();
 
   return (
     <div
-      style={{ background: data?.mainBackground ? data?.mainBackground : "" }}
-      className="w-full bg-blue-950 min-h-[100vh] max-w-[500px] mx-auto overflow-hidden shadow-xl"
+      style={{ background: data?.mainBackground || "#0f1729" }}
+      className="w-full min-h-screen max-w-[500px] mx-auto overflow-hidden text-white relative"
     >
-      {/* Profile Section */}
+      {/* Hero Image */}
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative"
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="relative h-80 overflow-hidden"
       >
         <img
           src={data?.image}
           alt="Profile"
-          className="w-full h-80 object-top object-cover rounded-b-lg shadow-lg"
+          className="w-full h-full object-cover object-top"
         />
+        {/* Gradient overlay */}
         <div
+          className="absolute inset-0"
           style={{
-            backgroundImage: data?.mainBackground
-              ? `linear-gradient(to top, ${data?.mainBackground},transparent )`
-              : "linear-gradient(to top, #162456 ,transparent )",
+            background: data?.mainBackground
+              ? `linear-gradient(to top, ${data.mainBackground} 10%, rgba(0,0,0,0.45) 60%, transparent 100%)`
+              : "linear-gradient(to top, #0f1729 10%, rgba(15,23,41,0.5) 60%, transparent 100%)",
           }}
-          className={`absolute -bottom-1 w-full bg-gradient-to-t from-[${data?.mainBackground}] to-transparent pb-6 pt-14 text-center`}
-        >
-          <h2
-            className={` ${textColor} text-3xl mb-2 font-extrabold animate-fade-in capitalize `}
-          >
+        />
+
+        {/* Name & job over image */}
+        <div className="absolute bottom-0 left-0 right-0 px-7 pb-6">
+          {data?.job && (
+            <span
+              className="inline-block text-[11px] tracking-widest uppercase px-3 py-1 rounded-full border mb-2.5"
+              style={{
+                color: lightColor,
+                background: dimColor,
+                borderColor,
+              }}
+            >
+              {data.job}
+            </span>
+          )}
+          <h2 className={`text-2xl font-medium tracking-tight ${textColor}`}>
             {data?.name}
           </h2>
-          <p
-            style={{
-              color: data?.buttomBackground
-                ? data?.buttomBackground
-                : `#868822`,
-            }}
-            className="text-lg font-medium animate-slide-up capitalize"
-          >
-            {data.job}
-          </p>
         </div>
       </motion.div>
 
-      {/* Info Section */}
+      {/* Bio */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.8 }}
-        className={`p-6 ${textColor}`}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="px-7 py-5"
       >
         <p
-          style={{ color: `${lightColor}` }}
-          className="text-yellow-400 font-bold text-lg text-center"
+          className="text-sm font-medium italic text-center leading-relaxed mb-2"
+          style={{ color: lightColor }}
         >
-          {data?.bio}
+          "{data?.bio}"
         </p>
         <p
-          style={{ color: `${color}` }}
-          className={`text-sm mt-3 text-center italic`}
+          className="text-xs text-center leading-relaxed"
+          style={{ color: aboutColor }}
         >
           {data?.about}
         </p>
       </motion.div>
 
-      {/* Contact Section */}
+      {/* Divider */}
+      <div
+        className="h-px mx-7"
+        style={{
+          background: `linear-gradient(to right, transparent, ${borderColor}, transparent)`,
+        }}
+      />
+
+      {/* Contact */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="p-6 text-white"
+        transition={{ delay: 0.35, duration: 0.6 }}
       >
-        <h3
-          style={{ color: `${lightColor}` }}
-          className={`   font-semibold text-lg text-center`}
+        <p
+          className="text-[11px] tracking-widest uppercase px-7 pt-5 pb-3 font-medium"
+          style={{ color: lightColor }}
         >
-          Contact Information
-        </h3>
-        <hr
-          className={` ${
-            data?.mainBackground ? `text-[#${lightColor}]` : "text-yellow-300"
-          }  my-3 `}
-        />{" "}
-        <div className="flex flex-col items-center space-y-6">
+          Contact
+        </p>
+
+        <div className="grid grid-cols-2 gap-3 px-7">
           {/* Phone */}
-          <motion.div
-            whileTap={{ scale: 0.9 }}
-            className="flex flex-col items-center"
+          <motion.a
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            href={`tel:+${data?.phone}`}
+            className="flex flex-col items-center gap-2 p-4 rounded-2xl"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: `0.5px solid ${borderColor}`,
+            }}
           >
-            <a
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center"
               style={{
-                backgroundColor: data.buttonBackgroud
-                  ? data.buttonBackground
-                  : `#868822`,
-                color: textColor,
+                background: dimColor,
+                border: `0.5px solid ${borderColor}`,
               }}
-              href={`tel:+${data.phone}`}
-              className="flex justify-center items-center w-14 h-14 bg-yellow-00 rounded-full shadow-md"
             >
-              <FaPhone />
-            </a>
-            <p
-              style={{ color: textColor }}
-              className="mt-5 mb-1 italic text-sm"
-            >
-              Phone
-            </p>
-            <a
-              style={{ color: textColor }}
-              href={`tel:+${data.phone}`}
-              className="font-semibold text-xl"
-            >
-              {data.phone}
-            </a>
-          </motion.div>
+              <FaPhone style={{ color: lightColor, fontSize: 16 }} />
+            </div>
+            <span className="text-[11px] text-slate-500">Phone</span>
+            <span className={`text-sm font-medium text-center ${textColor}`}>
+              {data?.phone}
+            </span>
+          </motion.a>
+
           {/* Address */}
-          <motion.div
-            whileTap={{ scale: 0.9 }}
-            className="flex flex-col items-center"
+          <motion.a
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-2 p-4 rounded-2xl"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: `0.5px solid ${borderColor}`,
+            }}
           >
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center"
               style={{
-                backgroundColor: data.buttonBackgroud
-                  ? data.buttonBackground
-                  : `#868822`,
-                color: textColor,
+                background: dimColor,
+                border: `0.5px solid ${borderColor}`,
               }}
-              className="flex justify-center items-center w-14 h-14 bg-[#868822] rounded-full shadow-md"
             >
-              <FiMapPin />
-            </a>
-            <p
-              style={{ color: textColor }}
-              className="mt-5 mb-1 italic text-sm"
-            >
-              Address
-            </p>
-            <a
-              href="https://www.google.com/maps/search/?api=1&query=47+W+13th+St,+New+York"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: textColor }}
-              className="text-md font-medium text-center"
-            >
-              13th Street 47 W 13th St, New York
-            </a>
-          </motion.div>
+              <FiMapPin style={{ color: lightColor, fontSize: 16 }} />
+            </div>
+            <span className="text-[11px] text-slate-500">Address</span>
+            <span className={`text-sm font-medium text-center ${textColor}`}>
+              View on map
+            </span>
+          </motion.a>
         </div>
       </motion.div>
 
-      {/* Social Media Section */}
+      {/* Socials */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.8 }}
-        className="p-6 flex justify-center space-x-6"
+        transition={{ delay: 0.45, duration: 0.6 }}
       >
-        {[FaFacebook, FaTwitter, FaLinkedin, FaInstagram].map((Icon, index) => (
-          <motion.a
-            key={index}
-            whileTap={{ scale: 0.9 }}
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-10 h-10 flex items-center justify-center rounded-full shadow-md text-white"
-            style={{
-              backgroundColor: ["#1877f2", "#1da1f2", "#0077b5", "#e1306c"][
-                index
-              ],
-            }}
-          >
-            <Icon />
-          </motion.a>
-        ))}
+        <p
+          className="text-[11px] tracking-widest uppercase px-7 pt-5 pb-3 font-medium"
+          style={{ color: lightColor }}
+        >
+          Social
+        </p>
+        <div className="flex gap-2.5 px-7">
+          {[
+            { Icon: FaFacebook, bg: "#1877f2" },
+            { Icon: FaTwitter, bg: "#1da1f2" },
+            { Icon: FaLinkedin, bg: "#0077b5" },
+            {
+              Icon: FaInstagram,
+              bg: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366)",
+            },
+          ].map(({ Icon, bg }, i) => (
+            <motion.a
+              key={i}
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+              style={{ background: bg }}
+            >
+              <Icon size={15} />
+            </motion.a>
+          ))}
+        </div>
       </motion.div>
 
-      {/* Buttons */}
+      {/* Save Button */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.7, duration: 0.8 }}
-        className="p-6 flex flex-col space-y-3"
+        transition={{ delay: 0.55, duration: 0.6 }}
+        className="px-7 pt-5 pb-8"
       >
         <motion.button
           onClick={() => handleSaveContact(data)}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm ${textBtnColor}`}
           style={{
             background: data?.buttonBackground
-              ? data?.buttonBackground
-              : `#868822`,
-            color: textBtnColor,
+              ? data.buttonBackground
+              : `linear-gradient(135deg, #b45309, #fbbf24)`,
           }}
-          className={`${textBtnColor} w-full flex items-center justify-center gap-3 py-3 bg-gradient-to-r from-gray-700 to-gray-800 font-bold text-lg rounded-lg shadow-lg cursor-pointer transition`}
         >
+          <FaRegSave size={15} />
           Save Contact
         </motion.button>
       </motion.div>

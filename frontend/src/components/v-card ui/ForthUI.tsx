@@ -17,226 +17,215 @@ const FourthUI = ({ data }: { data: any }) => {
   const encodedAddress = encodeURIComponent(data?.address || "");
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
 
-  // Default text and btn color
   const [textColor, setTextColor] = useState("text-[#cbd5e1]");
   const [textBtnColor, setTextBtnColor] = useState("text-gray-300");
 
   useEffect(() => {
-    // check if color is dark Update text color
     setTextColor(
-      isDark(data?.mainBackground) ? "text-[#cbd5e1]" : "text-black"
+      isDark(data?.mainBackground) ? "text-[#cbd5e1]" : "text-black",
     );
     setTextBtnColor(
-      isDark(data?.buttonBackground) ? "text-[#cbd5e1]" : "text-black"
+      isDark(data?.buttonBackground) ? "text-[#cbd5e1]" : "text-black",
     );
   }, [data?.mainBackground, data?.buttonBackground]);
 
-  const lightColor = tinycolor(data?.mainBackground).lighten(60).toHexString();
+  const accentColor = data?.mainBackground || "#a855f7";
+  const btnColor = data?.buttonBackground;
+  const lightColor = tinycolor(accentColor).lighten(40).toHexString();
+  const dimColor = tinycolor(accentColor).setAlpha(0.15).toRgbString();
+  const borderColor = tinycolor(accentColor).setAlpha(0.3).toRgbString();
 
   return (
     <div
       style={{
         backgroundImage: data?.mainBackground
-          ? `linear-gradient(to bottom right, #1a1a1a, ${data?.mainBackground}, #2d2d2d)`
-          : "",
-        // border: `1px solid ${data?.buttonBackground}`,
+          ? `linear-gradient(160deg, #1a1a1a 0%, ${accentColor} 50%, #2d2d2d 100%)`
+          : "linear-gradient(160deg, #0f172a, #1e293b)",
       }}
-      className="w-full max-w-[500px] mx-auto min-h-screen bg-gradient-to-r from-[#0f172a] to-[#1e293b] text-white shadow-xl overflow-hidden p-8 "
+      className="w-full max-w-[500px] mx-auto min-h-screen text-white overflow-hidden pb-8 relative"
     >
+      {/* Ambient glow */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none"
+        style={{
+          background: `radial-gradient(circle, ${tinycolor(accentColor).setAlpha(0.2).toRgbString()} 0%, transparent 70%)`,
+        }}
+      />
+
       {/* Profile Section */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        style={{
-          backgroundImage: data?.mainBackground
-            ? `linear-gradient(to bottom right,#1a1a1a, ${
-                data?.mainBackground || "#ffffff"
-              },  #2d2d2d)`
-            : "",
-          border: data?.mainBackground
-            ? `1px solid ${data?.buttonBackground}`
-            : "",
-        }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative bg-gradient-to-b from-[#1e293b] to-[#0f172a] p-8 mb-4 text-center shadow-2xl rounded-xl border border-gray-700"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-12 pb-7 px-8 text-center relative"
       >
-        <div className="relative flex justify-center">
-          <img
+        {/* Avatar ring */}
+        <div className="relative inline-block mb-4">
+          <div
+            className="absolute inset-[-4px] rounded-full"
             style={{
-              border: data?.mainBackground ? `6px solid ${lightColor}` : "",
+              background: data?.mainBackground
+                ? `conic-gradient(${accentColor}, ${lightColor}, #ec4899, ${accentColor})`
+                : "conic-gradient(#a855f7, #6366f1, #ec4899, #a855f7)",
             }}
+          />
+          <img
             src={data?.image}
             alt="Profile"
-            className="w-48 h-48 object-cover object-top rounded-full border-8 border-[#cbd5e1] shadow-xl transform hover:scale-110 transition-transform duration-300"
+            className="relative w-28 h-28 rounded-full object-cover object-top border-[3px] border-[#1a1a1a] z-10 hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <h2
-          className={`text-3xl ${
-            data?.mainBackground ? textColor : ""
-          } font-extrabold mt-6  drop-shadow-lg`}
-        >
+
+        {/* Job badge */}
+        {data?.job && (
+          <div className="mb-3">
+            <span
+              className="text-[11px] px-3 py-1 rounded-full border tracking-widest uppercase"
+              style={{
+                background: dimColor,
+                borderColor,
+                color: lightColor,
+              }}
+            >
+              {data.job}
+            </span>
+          </div>
+        )}
+
+        <h2 className={`text-2xl font-medium tracking-tight mb-1 ${textColor}`}>
           {data?.name}
         </h2>
-        <p
-          className={`${
-            data?.mainBackground ? textColor : ""
-          } text-lg mt-2 font-semibold`}
-        >
-          {data?.job}
-        </p>
       </motion.div>
 
-      {/* Info Section */}
+      {/* Divider */}
       <div
+        className="h-px mx-8 mb-1"
         style={{
-          border: data?.buttonBackground
-            ? `1px solid ${data?.buttonBackground}`
-            : "",
+          background: `linear-gradient(to right, transparent, ${borderColor}, transparent)`,
         }}
-        className="p-6 text-center bg-opacity-10 backdrop-blur-md rounded-lg border border-gray-600"
+      />
+
+      {/* Bio / Info Section */}
+      <div
+        className="mx-6 my-4 p-4 rounded-xl"
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          border: `0.5px solid ${borderColor}`,
+        }}
       >
-        <p
-          className={`${
-            data?.mainBackground ? textColor : "text-gray-400"
-          } font-semibold text-lg italic`}
-        >
-          {data?.bio}
+        <p className={`text-sm italic leading-relaxed mb-2 ${textColor}`}>
+          "{data?.bio}"
         </p>
         <p
-          className={`text-sm mt-3 italic ${
-            data?.mainBackground ? textColor : "text-gray-400"
-          } leading-relaxed`}
+          className="text-xs leading-relaxed"
+          style={{ color: tinycolor(accentColor).lighten(25).toHexString() }}
         >
           {data?.about}
         </p>
       </div>
 
       {/* Contact Section */}
-      <div className="p-6">
-        <h3
-          className={` ${
-            data?.mainBackground ? textColor : "white"
-          } font-semibold text-xl text-center mb-4`}
+      <p
+        className="text-[11px] tracking-widest uppercase px-6 mb-3 font-medium"
+        style={{ color: lightColor }}
+      >
+        Contact
+      </p>
+      <div className="px-6 flex flex-col gap-2.5">
+        {/* Phone */}
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          href={`tel:+${data?.phone}`}
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: `0.5px solid ${borderColor}`,
+          }}
         >
-          Contact Info
-        </h3>
-        <div className="space-y-6">
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            href={`tel:+${data?.phone}`}
-            style={{
-              backgroundImage: data?.mainBackground
-                ? `linear-gradient(to bottom right, #1a1a1a,${data?.mainBackground}, #2d2d2d)`
-                : "",
-            }}
-            className="flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow-md border border-gray-600 hover:bg-gray-700 transition"
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: dimColor }}
           >
-            <div className="flex items-center gap-3">
-              <FaPhone
-                className={` ${
-                  data?.mainBackground ? textColor : "gray-300"
-                } text-xl`}
-              />
-              <span
-                className={`font-semibold italic ${
-                  data?.mainBackground ? textColor : "gray-300"
-                }`}
-              >
-                Phone
-              </span>
-            </div>
-            <span
-              className={`text-lg font-bold ${
-                data?.mainBackground ? textColor : "gray-300"
-              }`}
-            >
-              {data?.phone}
-            </span>
-          </motion.a>
+            <FaPhone style={{ color: lightColor, fontSize: 14 }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-slate-400 mb-0.5">Phone</p>
+            <p className={`text-sm font-medium ${textColor}`}>{data?.phone}</p>
+          </div>
+          <span className="text-slate-500 text-lg">›</span>
+        </motion.a>
 
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            href={mapsUrl}
-            target="_blank"
-            style={{
-              backgroundImage: data?.mainBackground
-                ? `linear-gradient(to bottom right, #1a1a1a, ${data?.mainBackground}, #2d2d2d)`
-                : "",
-            }}
-            className="flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow-md border border-gray-600 hover:bg-gray-700 transition"
+        {/* Address */}
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          href={mapsUrl}
+          target="_blank"
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: `0.5px solid ${borderColor}`,
+          }}
+        >
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: dimColor }}
           >
-            <div className="flex items-center gap-3">
-              <FiMapPin
-                className={` text-xl  ${
-                  data?.mainBackground ? textColor : "gray-300"
-                }`}
-              />
-              <span
-                className={`font-semibold italic  ${
-                  data?.mainBackground ? textColor : "gray-300"
-                }`}
-              >
-                Address
-              </span>
-            </div>
-            <span
-              className={`text-md font-bold  ${
-                data?.mainBackground ? textColor : "gray-300"
-              }`}
-            >
-              View Map
-            </span>
-          </motion.a>
-        </div>
+            <FiMapPin style={{ color: lightColor, fontSize: 14 }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-slate-400 mb-0.5">Address</p>
+            <p className={`text-sm font-medium ${textColor}`}>View on map</p>
+          </div>
+          <span className="text-slate-500 text-lg">›</span>
+        </motion.a>
       </div>
 
-      {/* Social Media Links */}
-      <div className="p-6 flex justify-center space-x-6">
+      {/* Social Media */}
+      <p
+        className="text-[11px] tracking-widest uppercase px-6 mt-5 mb-3 font-medium"
+        style={{ color: lightColor }}
+      >
+        Social
+      </p>
+      <div className="px-6 flex gap-3">
         {[
-          {
-            icon: FaFacebook,
-            color: "bg-blue-600",
-          },
-          {
-            icon: FaTwitter,
-            color: "bg-blue-400",
-          },
-          {
-            icon: FaLinkedin,
-            color: "bg-blue-700",
-          },
-          {
-            icon: FaInstagram,
-            color: "bg-pink-600",
-          },
+          { icon: FaFacebook, color: "#60a5fa" },
+          { icon: FaTwitter, color: "#38bdf8" },
+          { icon: FaLinkedin, color: "#818cf8" },
+          { icon: FaInstagram, color: "#f472b6" },
         ].map((social, index) => (
           <motion.a
             key={index}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.1, y: -2 }}
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className={`w-12 h-12 flex items-center justify-center rounded-full shadow-md text-white border border-gray-500 ${social.color} transition-transform`}
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "0.5px solid rgba(255,255,255,0.12)",
+            }}
           >
-            {social.icon({ size: 24 })}
+            <social.icon size={16} color={social.color} />
           </motion.a>
         ))}
       </div>
 
-      {/* Buttons */}
-      <div className="p-6">
+      {/* Save Button */}
+      <div className="px-6 mt-5">
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => handleSaveContact(data)}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm ${textBtnColor}`}
           style={{
-            background: data?.buttonBackground ? data?.buttonBackground : "",
+            background: btnColor
+              ? btnColor
+              : `linear-gradient(135deg, ${accentColor}, ${lightColor})`,
           }}
-          className={`${
-            data?.buttonBackground ? textBtnColor : ""
-          } w-full flex items-center justify-center gap-3 py-3 bg-gradient-to-r from-[#000000] to-gray-700 cursor-pointer font-bold rounded-xl shadow-md hover:from-gray-300 transition`}
         >
-          <FaRegSave /> Save Contact
+          <FaRegSave size={15} />
+          Save Contact
         </motion.button>
       </div>
     </div>

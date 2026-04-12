@@ -21,26 +21,23 @@ const SecondUiTest = ({
   tempMainBackground: any;
   tempButtonBackground: any;
 }) => {
-  // Default text and btn color
   const [textColor, setTextColor] = useState("text-white");
   const [textBtnColor, setTextBtnColor] = useState("text-black");
 
   useEffect(() => {
-    // check if color is dark Update text color
-
     setTextColor(
       tempMainBackground || formData?.mainBackground
         ? isDark(tempMainBackground || formData?.mainBackground)
           ? "text-white"
           : "text-black"
-        : "text-white"
+        : "text-white",
     );
     setTextBtnColor(
       tempButtonBackground || formData?.buttonBackground
         ? isDark(tempButtonBackground || formData?.buttonBackground)
           ? "text-white"
           : "text-black"
-        : "text-black"
+        : "text-black",
     );
   }, [
     tempMainBackground,
@@ -49,162 +46,192 @@ const SecondUiTest = ({
     formData?.buttonBackground,
   ]);
 
-  const lightColor = tinycolor(tempMainBackground).lighten(60).toHexString();
+  const accentColor =
+    tempMainBackground || formData?.mainBackground || "#7c3aed";
+  const btnColor = tempButtonBackground || formData?.buttonBackground;
+  const lightColor = tinycolor(accentColor).lighten(35).toHexString();
+  const dimColor = tinycolor(accentColor).setAlpha(0.12).toRgbString();
+  const borderColor = tinycolor(accentColor).setAlpha(0.25).toRgbString();
+  const conicGradient = `conic-gradient(${accentColor}, ${lightColor}, #ec4899, ${accentColor})`;
 
   return (
-    <div className="w-full h-fit max-w-lg mx-auto bg-gradient-to-b from-gray-900 to-black text-white shadow-2xl overflow-hidden p-6 relative">
-      {/* Profile Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+    <div
+      style={{
+        background: accentColor
+          ? `linear-gradient(160deg, #0f0a1e 0%, ${tinycolor(accentColor).darken(20).toHexString()} 50%, #0a0a0a 100%)`
+          : "linear-gradient(160deg, #0f0a1e, #1a0f2e, #0a0a0a)",
+      }}
+      className="w-full max-w-lg mx-auto min-h-screen text-white overflow-hidden pb-8 relative"
+    >
+      {/* Ambient glow */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, ${
-            tempMainBackground || formData?.mainBackground
-          },  #1a1a1a)`,
-          border: `1px solid ${
-            tempButtonBackground || formData?.buttonBackground
-          }`,
+          background: `radial-gradient(circle, ${tinycolor(accentColor).setAlpha(0.2).toRgbString()} 0%, transparent 70%)`,
         }}
-        className="relative bg-gradient-to-b from-purple-800 to-gray-900 p-6 pb-16 text-center shadow-2xl rounded-xl"
+      />
+
+      {/* Hero / Profile */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-12 pb-6 px-8 text-center relative"
       >
-        <div className="relative flex justify-center">
+        {/* Avatar with conic ring */}
+        <div className="relative inline-block mb-4">
+          <div
+            className="absolute inset-[-4px] rounded-full"
+            style={{ background: conicGradient }}
+          />
           <img
             src={formData?.image}
             alt="Profile"
-            style={{
-              border: tempMainBackground && `8px solid ${lightColor}`,
-            }}
-            className="w-48 h-48 object-cover object-top rounded-full border-8 border-purple-400 shadow-xl transform hover:scale-110 transition-transform duration-300"
+            className="relative w-28 h-28 rounded-full object-cover object-top border-[3px] border-[#0f0a1e] z-10 hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <h2
-          className={`text-2xl font-extrabold mt-6 ${textColor} drop-shadow-lg`}
-        >
+
+        {/* Job badge */}
+        {formData?.job && (
+          <div className="mb-3">
+            <span
+              className="text-[11px] px-3 py-1 rounded-full border tracking-widest uppercase"
+              style={{ color: lightColor, background: dimColor, borderColor }}
+            >
+              {formData.job}
+            </span>
+          </div>
+        )}
+
+        <h2 className={`text-2xl font-medium tracking-tight mb-1 ${textColor}`}>
           {formData?.name}
         </h2>
-        <p className={` ${textColor} text-lg mt-2 font-semibold`}>
-          {formData?.job}
-        </p>
       </motion.div>
 
-      {/* Info Section */}
-      <div className="p-6 text-center bg-opacity-10 backdrop-blur-md rounded-lg">
+      {/* Divider */}
+      <div
+        className="h-px mx-8 mb-1"
+        style={{
+          background: `linear-gradient(to right, transparent, ${borderColor}, transparent)`,
+        }}
+      />
+
+      {/* Bio */}
+      <div
+        className="mx-6 my-4 p-4 rounded-xl"
+        style={{ background: dimColor, border: `0.5px solid ${borderColor}` }}
+      >
         <p
+          className="text-sm italic text-center leading-relaxed mb-2"
           style={{ color: lightColor }}
-          className="text-purple-300 font-semibold text-lg italic"
         >
-          {formData?.bio}
+          "{formData?.bio}"
         </p>
-        <p className="text-sm mt-3 text-gray-300 leading-relaxed">
+        <p className="text-xs text-center leading-relaxed text-slate-500">
           {formData?.about}
         </p>
       </div>
 
-      {/* Contact Section */}
-      <div className="p-6">
-        <h3
-          style={{ color: lightColor }}
-          className="text-purple-400 font-semibold text-xl text-center mb-4"
+      {/* Contact */}
+      <p
+        className="text-[11px] tracking-widest uppercase px-6 mb-3 font-medium"
+        style={{ color: lightColor }}
+      >
+        Contact
+      </p>
+      <div className="px-6 flex flex-col gap-2.5">
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          href={`tel:+${formData?.phone}`}
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{ background: dimColor, border: `0.5px solid ${borderColor}` }}
         >
-          Contact Info
-        </h3>
-        <div className="space-y-6">
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            href={`tel:+${formData?.phone}`}
-            className="flex justify-between items-center max-[390px]:flex-col max-[390px]:gap-2 bg-gray-800 p-4 rounded-lg shadow-md  transition"
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{
+              background: tinycolor(accentColor).setAlpha(0.2).toRgbString(),
+            }}
           >
-            <div className="flex items-center gap-3">
-              <FaPhone
-                style={{ color: lightColor }}
-                className="text-purple-400 text-xl"
-              />
-              <span className={` ${textColor}   font-semibold italic`}>
-                Phone
-              </span>
-            </div>
-            <span
-              style={{ color: lightColor }}
-              className="text-lg font-bold text-purple-300"
-            >
+            <FaPhone style={{ color: lightColor, fontSize: 13 }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-slate-500 mb-0.5">Phone</p>
+            <p className={`text-sm font-medium ${textColor}`}>
               {formData?.phone}
-            </span>
-          </motion.a>
+            </p>
+          </div>
+          <span className="text-slate-600 text-lg">›</span>
+        </motion.a>
 
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            href={""}
-            target="_blank"
-            className="flex justify-between items-center max-[390px]:flex-col max-[390px]:gap-2 bg-gray-800 p-4 rounded-lg shadow-md  transition"
+        <motion.a
+          whileHover={{ scale: 1.02 }}
+          href=""
+          target="_blank"
+          className="flex items-center gap-3 p-3 rounded-xl"
+          style={{ background: dimColor, border: `0.5px solid ${borderColor}` }}
+        >
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{
+              background: tinycolor(accentColor).setAlpha(0.2).toRgbString(),
+            }}
           >
-            <div className="flex items-center gap-3">
-              <FiMapPin
-                style={{ color: lightColor }}
-                className="text-purple-400 text-xl"
-              />
-              <span className={` ${textColor} font-semibold italic`}>
-                Address
-              </span>
-            </div>
-            <span
-              style={{ color: lightColor }}
-              className="text-md font-bold text-purple-300"
-            >
-              View Map
-            </span>
-          </motion.a>
-        </div>
+            <FiMapPin style={{ color: lightColor, fontSize: 13 }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-slate-500 mb-0.5">Address</p>
+            <p className={`text-sm font-medium ${textColor}`}>View on map</p>
+          </div>
+          <span className="text-slate-600 text-lg">›</span>
+        </motion.a>
       </div>
 
-      {/* Social Media Links */}
-      <div className="p-6 flex justify-center space-x-6">
+      {/* Socials */}
+      <p
+        className="text-[11px] tracking-widest uppercase px-6 mt-5 mb-3 font-medium"
+        style={{ color: lightColor }}
+      >
+        Social
+      </p>
+      <div className="px-6 flex gap-2.5">
         {[
+          { Icon: FaFacebook, bg: "#1877f2" },
+          { Icon: FaTwitter, bg: "#1da1f2" },
+          { Icon: FaLinkedin, bg: "#0077b5" },
           {
-            icon: FaFacebook,
-            color: "bg-blue-600",
+            Icon: FaInstagram,
+            bg: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366)",
           },
-          {
-            icon: FaTwitter,
-            color: "bg-blue-400",
-          },
-          {
-            icon: FaLinkedin,
-            color: "bg-blue-700",
-          },
-          {
-            icon: FaInstagram,
-            color: "bg-pink-600",
-          },
-        ].map((social, index) => (
+        ].map(({ Icon, bg }, i) => (
           <motion.a
-            key={index}
-            whileHover={{ scale: 1.1 }}
+            key={i}
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md text-white ${social.color} transition-transform`}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+            style={{ background: bg }}
           >
-            {social.icon({ size: 24 })}
+            <Icon size={15} />
           </motion.a>
         ))}
       </div>
 
-      {/* Buttons */}
-      <div className="p-6">
+      {/* Save Button — div + formData.select (no handleSaveContact, test mode) */}
+      <div className="px-6 mt-5">
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm cursor-pointer ${textBtnColor}`}
           style={{
-            backgroundImage: `linear-gradient(to bottom right, ${
-              tempButtonBackground || formData?.buttonBackground
-            },  #1a1a1a)`,
+            background: btnColor
+              ? btnColor
+              : `linear-gradient(135deg, ${accentColor}, ${lightColor})`,
           }}
-          className={`w-full cursor-pointer flex items-center justify-center gap-3 py-3 ${textBtnColor} bg-gradient-to-r from-purple-500 to-purple-700 font-bold rounded-xl shadow-md transition`}
         >
-          {formData?.select ? formData?.select : "Save Contact"}
-
-          <FaRegSave />
+          <FaRegSave size={15} />
+          {formData?.select ? formData.select : "Save Contact"}
         </motion.div>
       </div>
     </div>

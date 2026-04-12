@@ -79,4 +79,5 @@ export type Card = {
   activated?: boolean;
   createdAt?: Date;
   client?: Client;
+  sold_service?: SoldService;
 };

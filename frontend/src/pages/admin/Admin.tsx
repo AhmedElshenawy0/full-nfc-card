@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FaPlus, FaIdCard, FaUsers, FaSignOutAlt } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import {
   useGetAllClientsQuery,
@@ -13,58 +13,45 @@ import Snipper from "../../components/global/Snipper";
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
-
   const [logout, { isError, isSuccess: logoutIsSuccess }] = useLogoutMutation();
-
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
     try {
       const response = await logout(undefined).unwrap();
-      console.log("Logout response:", response);
-
       if (response?.message === "success") {
         toast.success("Logged out successfully!");
         navigate("/signin?loggedOut=true");
       }
     } catch (err) {
-      console.error("Logout failed:", err);
       toast.error("Logout failed. Try again!");
     }
   };
 
-  //=> Handle logout response
   useEffect(() => {
     if (logoutIsSuccess) {
       toast.success("Logged out successfully!");
       navigate("/signin?loggedOut=true");
-      console.log("logout true");
     }
-    if (isError) {
-      toast.error("Logout failed. Try again!");
-      console.log("logout true");
-    }
+    if (isError) toast.error("Logout failed. Try again!");
   }, [logoutIsSuccess, isError, navigate]);
 
-  //=> Get all cards
   const {
     data: allCards,
     error: fetchCardsError,
     isLoading: isCardsLoading,
   } = useGetAllCardsQuery(undefined);
 
-  //=> Get all clients
   const {
     data: allClients,
     error: fetchClientsError,
     isLoading: isClientsLoading,
   } = useGetAllClientsQuery(undefined);
 
-  //=> Handle fetch clients and cards errors
   useEffect(() => {
     if (fetchCardsError) {
       toast.error(
-        (fetchCardsError as any)?.data?.message || "Error loading cards"
+        (fetchCardsError as any)?.data?.message || "Error loading cards",
       );
     }
     if (fetchClientsError) {
@@ -74,22 +61,15 @@ export const AdminDashboard = () => {
         "Access Forbidden: Admins only"
       ) {
         navigate("/signin");
-        console.log("access forbidden");
-
-        // toast.error(
-        //   (fetchClientsError as any)?.data?.message || "Error loading clients"
-        // );
         return;
       } else {
         toast.error(
-          (fetchClientsError as any)?.data?.message || "Error loading clients"
+          (fetchClientsError as any)?.data?.message || "Error loading clients",
         );
       }
-      return;
     }
   }, [fetchClientsError, fetchCardsError]);
 
-  //=> Handle loading fetch cards and clients
   if (isCardsLoading || isClientsLoading) {
     return (
       <div className="text-center text-gray-400">
@@ -98,108 +78,291 @@ export const AdminDashboard = () => {
     );
   }
 
-  // if (!allCards || !allClients) {
-  //   return (
-  //     <div className="text-center text-red-400 mt-12">
-  //       Failed to load dashboard data. Please try again later.
-  //     </div>
-  //   );
-  // }
+  const activeCards =
+    allCards?.cards?.filter((card: Card) => card?.client_id !== null).length ??
+    0;
+  const totalCards = allCards?.cards?.length ?? 0;
+  const totalClients = allClients?.clients?.length ?? 0;
+
+  const stats = [
+    { label: "Total Cards", value: totalCards, color: "rgba(74,222,128,0.9)" },
+    {
+      label: "Active Cards",
+      value: activeCards,
+      color: "rgba(167,139,250,0.9)",
+    },
+    { label: "Clients", value: totalClients, color: "rgba(74,222,128,0.9)" },
+  ];
+
+  const navLinks = [
+    {
+      to: "/add-card",
+      icon: <FaPlus size={14} />,
+      label: "Add New Card",
+      color: "green",
+    },
+    {
+      to: "/cards",
+      icon: <FaIdCard size={14} />,
+      label: "View Cards",
+      color: "green",
+    },
+    {
+      to: "/clients",
+      icon: <FaUsers size={14} />,
+      label: "View Clients",
+      color: "purple",
+    },
+  ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="flex flex-col items-center text-gray-100 w-full max-w-xl mx-auto p-6 rounded-2xl shadow-xl bg-gradient-to-br from-gray-900 to-black border border-green-800 transition-all"
-    >
-      <h1 className="text-[28px] font-bold mb-4 tracking-wide text-mint-100">
-        Admin Dashboard
-      </h1>
-      <hr className="w-full border-mint-600 mb-6 " />
-
-      <div className="flex justify-between w-full mb-6">
-        <div className="flex-1 text-center">
-          <p className="text-lg font-bold text-mint-300">
-            {allCards?.cards?.length}
+    <>
+      {/* ✅ bg-transparent — بياخد bg من الـ Layout */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-sm mx-auto bg-transparent"
+      >
+        {/* Header */}
+        <div className="mb-6">
+          <p
+            className="text-[10px] tracking-[0.3em] uppercase mb-1 font-mono"
+            style={{ color: "rgba(74,222,128,0.5)" }}
+          >
+            Control Panel
           </p>
-          <p className="text-sm text-mint-100/70">Cards</p>
+          <h1 className="text-[22px] font-medium text-white tracking-tight">
+            Admin Dashboard
+          </h1>
         </div>
-        <div className="flex-1 text-center">
-          <p className="text-lg font-bold text-mint-300">
-            {
-              allCards?.cards?.filter((card: Card) => card?.client_id !== null)
-                .length
-            }
-          </p>
-          <p className="text-sm text-mint-100/70">Active Cards</p>
+
+        {/* Divider */}
+        <div
+          className="w-full h-[0.5px] mb-6"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(74,222,128,0.3), rgba(58,13,78,0.3), transparent)",
+          }}
+        />
+
+        {/* Stats — ✅ كان: text فقط بدون container
+                      ✅ بقى: cards شفافة bg-white/5 */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              className="rounded-xl p-3 text-center"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <p
+                className="text-[20px] font-medium mb-0.5"
+                style={{ color: stat.color }}
+              >
+                {stat.value}
+              </p>
+              <p className="text-[10px] text-gray-500 tracking-wide">
+                {stat.label}
+              </p>
+            </motion.div>
+          ))}
         </div>
-        <div className="flex-1 text-center">
-          <p className="text-lg font-bold text-mint-300">
-            {allClients?.clients?.length}
-          </p>
-          <p className="text-sm text-mint-100/70">Clients</p>
+
+        {/* Nav Links — ✅ كان: bg-green-800 solid
+                        ✅ بقى: شفاف مع border */}
+        <div className="flex flex-col gap-2 mb-3">
+          {navLinks.map((link, i) => (
+            <motion.div
+              key={link.to}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 + i * 0.07 }}
+            >
+              <Link
+                to={link.to}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-150 group"
+                style={{
+                  background:
+                    link.color === "green"
+                      ? "rgba(20,83,45,0.25)"
+                      : "rgba(58,13,78,0.3)",
+                  border:
+                    link.color === "green"
+                      ? "0.5px solid rgba(74,222,128,0.15)"
+                      : "0.5px solid rgba(167,139,250,0.15)",
+                  color:
+                    link.color === "green"
+                      ? "rgba(134,239,172,0.85)"
+                      : "rgba(216,180,254,0.85)",
+                  backdropFilter: "blur(8px)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background =
+                    link.color === "green"
+                      ? "rgba(20,83,45,0.45)"
+                      : "rgba(58,13,78,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background =
+                    link.color === "green"
+                      ? "rgba(20,83,45,0.25)"
+                      : "rgba(58,13,78,0.3)";
+                }}
+              >
+                <span
+                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background:
+                      link.color === "green"
+                        ? "rgba(20,83,45,0.4)"
+                        : "rgba(58,13,78,0.5)",
+                  }}
+                >
+                  {link.icon}
+                </span>
+                {link.label}
+                <span className="ml-auto opacity-30 text-[10px]">→</span>
+              </Link>
+            </motion.div>
+          ))}
         </div>
-      </div>
 
-      <div className="w-full flex flex-col gap-4">
-        <Link
-          to="/add-card"
-          className="flex items-center gap-3 p-4 bg-green-800 hover:bg-green-950 transition rounded-xl shadow text-mint-100"
-        >
-          <FaPlus className="text-xl text-[#6ee7b7]" />
-          <span className="font-medium">Add New Card</span>
-        </Link>
-
-        <Link
-          to="/cards"
-          className="flex items-center gap-3 p-4 bg-green-800 hover:bg-green-950 transition rounded-xl shadow text-mint-100"
-        >
-          <FaIdCard className="text-xl text-[#6ee7b7]" />
-          <span className="font-medium">View Cards</span>
-        </Link>
-
-        <Link
-          to="/clients"
-          className="flex items-center gap-3 p-4 bg-green-800 hover:bg-green-950 transition rounded-xl shadow text-mint-100"
-        >
-          <FaUsers className="text-xl text-[#6ee7b7]" />
-          <span className="font-medium">View Clients</span>
-        </Link>
-
-        <button
+        {/* Logout — ✅ كان: bg-red-900 solid
+                      ✅ بقى: شفاف مع border */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
           onClick={() => setShowLogoutConfirm(true)}
-          className="flex items-center gap-3 p-4 bg-red-900 border border-red-950 transition rounded-xl shadow text-mint-100"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-150"
+          style={{
+            background: "rgba(127,29,29,0.2)",
+            border: "0.5px solid rgba(239,68,68,0.15)",
+            color: "rgba(252,165,165,0.8)",
+            backdropFilter: "blur(8px)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = "rgba(127,29,29,0.35)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = "rgba(127,29,29,0.2)")
+          }
         >
-          <FaSignOutAlt className="text-xl text-white" />
-          <span className="font-medium">Log Out</span>
-        </button>
-      </div>
+          <span
+            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(127,29,29,0.35)" }}
+          >
+            <FaSignOutAlt size={13} />
+          </span>
+          Log Out
+        </motion.button>
+      </motion.div>
 
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
-          <div className="bg-white text-black rounded-xl shadow-lg p-6 w-[90%] max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Confirm Logout</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to logout?
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </motion.div>
+      {/* Logout Confirm Modal
+          ✅ كان: bg-white text-black — منفصل تماماً عن الـ theme
+          ✅ بقى: شفاف مع backdrop-blur — متناسق مع الـ layout
+      */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(6px)",
+            }}
+            onClick={() => setShowLogoutConfirm(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 8 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-[88%] max-w-sm rounded-2xl p-6"
+              style={{
+                background: "rgba(15,5,20,0.85)",
+                border: "0.5px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+              }}
+            >
+              {/* Modal header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{
+                    background: "rgba(127,29,29,0.3)",
+                    border: "0.5px solid rgba(239,68,68,0.2)",
+                  }}
+                >
+                  <FaSignOutAlt size={13} className="text-red-400" />
+                </div>
+                <h2 className="text-[15px] font-medium text-white">
+                  Confirm Logout
+                </h2>
+              </div>
+
+              <p className="text-[13px] text-gray-500 mb-6 leading-relaxed">
+                Are you sure you want to logout from the admin panel?
+              </p>
+
+              <div
+                className="w-full h-[0.5px] mb-4"
+                style={{ background: "rgba(255,255,255,0.06)" }}
+              />
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: "0.5px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.6)",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background =
+                      "rgba(255,255,255,0.09)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background =
+                      "rgba(255,255,255,0.05)")
+                  }
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150"
+                  style={{
+                    background: "rgba(127,29,29,0.35)",
+                    border: "0.5px solid rgba(239,68,68,0.25)",
+                    color: "rgba(252,165,165,0.9)",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "rgba(127,29,29,0.55)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "rgba(127,29,29,0.35)")
+                  }
+                >
+                  Logout
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
