@@ -79,17 +79,25 @@ router.get("/check-user-role/:email", getUserRole);
 router.get(
   "/google",
   (req: any, res, next) => {
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("cardType", req.query.cardType, {
       httpOnly: true,
       maxAge: 5 * 60 * 1000,
-    }); // 5 mins expiry
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
+    });
     res.cookie("cardId", req.query.cardId, {
       httpOnly: true,
       maxAge: 5 * 60 * 1000,
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
     });
     res.cookie("uniqueCode", req.query.uniqueCode, {
       httpOnly: true,
       maxAge: 5 * 60 * 1000,
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
     });
 
     console.log("Stored in session:", req.cookies.cardType);
