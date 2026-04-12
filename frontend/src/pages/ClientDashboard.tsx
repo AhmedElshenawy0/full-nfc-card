@@ -281,7 +281,7 @@ const ServiceCard = ({
             QR Code
           </p>
           <QRShapeSelector
-            qrUrl={`${import.meta.env.VITE_CLIENT_URL}/${
+            qrUrl={`https://signuptap.com/${
               ele.type === "vCard"
                 ? "template"
                 : ele.type === "menu"
