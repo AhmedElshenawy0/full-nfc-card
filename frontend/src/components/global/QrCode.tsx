@@ -10,7 +10,6 @@ interface QRWithImageProps {
   qrUrl: string;
 }
 
-// ─── modal rendered into document.body via portal ─────────────────────────────
 const ModalOverlay = ({
   children,
   onClose,
@@ -53,7 +52,6 @@ const ModalOverlay = ({
     document.body,
   );
 
-// ─── action button inside modal ───────────────────────────────────────────────
 interface ModalBtnProps {
   onClick: () => void;
   icon: React.ReactNode;
@@ -63,7 +61,6 @@ interface ModalBtnProps {
 
 const ModalBtn = ({ onClick, icon, label, variant }: ModalBtnProps) => {
   const [hov, setHov] = useState(false);
-
   const styles = {
     blue: {
       bg: hov ? "rgba(37,99,235,0.85)" : "rgba(37,99,235,0.7)",
@@ -112,109 +109,180 @@ const ModalBtn = ({ onClick, icon, label, variant }: ModalBtnProps) => {
   );
 };
 
-// ─── main component ───────────────────────────────────────────────────────────
 const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
   const [logoName, setLogoName] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [btnHov, setBtnHov] = useState(false);
-  const qrCodeRef = useRef<QRCodeStyling | null>(null);
   const qrPreviewRef = useRef<HTMLDivElement | null>(null);
-  const circleImage = (src: string, size = 160): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d")!;
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(img, 0, 0, size, size);
-        resolve(canvas.toDataURL("image/png"));
-      };
-      img.onerror = reject;
-      img.src = src;
-    });
-  };
-  const generateQR = useCallback(() => {
+  const qrInstanceRef = useRef<QRCodeStyling | null>(null);
+
+  // build QR config
+  const buildQR = useCallback(
+    (size: number, logo?: string) =>
+      new QRCodeStyling({
+        width: size,
+        height: size,
+        data: qrUrl,
+        margin: size === 220 ? 4 : 20,
+        image: logo,
+        qrOptions: { errorCorrectionLevel: "H" },
+        imageOptions: logo
+          ? {
+              crossOrigin: "anonymous",
+              margin: size === 220 ? 6 : 12,
+              imageSize: 0.5,
+              hideBackgroundDots: true,
+              saveAsBlob: true,
+            }
+          : {},
+        dotsOptions: { color: "#4ade80", type: "extra-rounded" },
+        cornersSquareOptions: { color: "#4ade80", type: "extra-rounded" },
+        cornersDotOptions: { color: "#16a34a", type: "dot" },
+        backgroundOptions: { color: "#0c0c10" },
+      }),
+    [qrUrl],
+  );
+
+  // render preview
+  const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined);
+  const generatePreview = useCallback(() => {
     if (!qrPreviewRef.current) return;
     qrPreviewRef.current.innerHTML = "";
-
-    qrCodeRef.current = new QRCodeStyling({
-      width: 220,
-      height: 220,
-      data: qrUrl,
-      image: logoUrl ?? undefined,
-      margin: 4,
-      qrOptions: { errorCorrectionLevel: "H" },
-      imageOptions: logoUrl
-        ? {
-            crossOrigin: "anonymous",
-            margin: 6,
-            imageSize: 0.25,
-            hideBackgroundDots: true,
-          }
-        : {},
-      dotsOptions: { color: "#1a1a1a", type: "rounded" },
-      cornersSquareOptions: { color: "#111", type: "extra-rounded" },
-      cornersDotOptions: { color: "#111" },
-      backgroundOptions: { color: "#ffffff" },
-    });
-
-    qrCodeRef.current.append(qrPreviewRef.current);
-  }, [qrUrl, logoUrl]);
-
+    const qr = buildQR(220, logoBase64);
+    qrInstanceRef.current = qr;
+    qr.append(qrPreviewRef.current);
+  }, [buildQR, logoBase64]);
   useEffect(() => {
-    if (showModal) generateQR();
-  }, [showModal, generateQR]);
+    if (showModal) generatePreview();
+  }, [showModal, generatePreview]);
+
+  // re-render preview when logo changes
+  useEffect(() => {
+    if (showModal && qrPreviewRef.current) generatePreview();
+  }, [logoBase64]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setLogoName(file.name);
-    setLogoUrl(URL.createObjectURL(file));
+    setLogoUrl(URL.createObjectURL(file)); // for preview display
+
+    // convert to base64 immediately using FileReader
+    const reader = new FileReader();
+    reader.onload = () => {
+      setLogoBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleDownload = async () => {
     try {
-      const circularLogo = logoUrl
-        ? await circleImage(logoUrl, 160)
-        : await circleImage("/elrateb.jpg", 160);
+      console.log("1. Starting download...");
+      console.log("2. logoBase64 exists:", !!logoBase64);
+      console.log("3. qrUrl:", qrUrl);
 
-      const qrCode = new QRCodeStyling({
-        width: 2048,
-        height: 2048,
+      const size = 1024;
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+
+      const qrNoLogo = new QRCodeStyling({
+        width: size,
+        height: size,
         data: qrUrl,
         margin: 20,
         dotsOptions: { color: "#4ade80", type: "extra-rounded" },
         cornersSquareOptions: { color: "#4ade80", type: "extra-rounded" },
         cornersDotOptions: { color: "#16a34a", type: "dot" },
         backgroundOptions: { color: "#0c0c10" },
-        image: circularLogo,
-        imageOptions: {
-          crossOrigin: "anonymous",
-          margin: 12,
-          imageSize: 0.3,
-          saveAsBlob: true,
-        },
         qrOptions: { errorCorrectionLevel: "H" },
       });
 
-      qrCode.download({ name: "qr-code", extension: "svg" });
+      console.log("4. Getting QR raw data...");
+      const qrBlob = await qrNoLogo.getRawData("png");
+      console.log("5. qrBlob:", qrBlob);
+
+      if (!qrBlob) throw new Error("Failed to get QR data");
+
+      const qrBlobUrl = URL.createObjectURL(qrBlob as Blob);
+      console.log("6. qrBlobUrl:", qrBlobUrl);
+
+      await new Promise<void>((resolve, reject) => {
+        const qrImg = new Image();
+        qrImg.onload = () => {
+          console.log("7. QR image loaded successfully");
+          ctx.drawImage(qrImg, 0, 0, size, size);
+          URL.revokeObjectURL(qrBlobUrl);
+          resolve();
+        };
+        qrImg.onerror = (err) => {
+          console.log("7. QR image FAILED to load:", err);
+          reject(err);
+        };
+        qrImg.src = qrBlobUrl;
+      });
+
+      if (logoBase64) {
+        console.log("8. Drawing logo...");
+        await new Promise<void>((resolve, reject) => {
+          const logoImg = new Image();
+          logoImg.onload = () => {
+            console.log("9. Logo loaded successfully");
+            const logoSize = size * 0.3;
+            const logoX = (size - logoSize) / 2;
+            const logoY = (size - logoSize) / 2;
+            const radius = logoSize / 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(
+              logoX + radius,
+              logoY + radius,
+              radius + 20,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fillStyle = "#0c0c10";
+            ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(logoX + radius, logoY + radius, radius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+            ctx.restore();
+            resolve();
+          };
+          logoImg.onerror = (err) => {
+            console.log("9. Logo FAILED to load:", err);
+            reject(err);
+          };
+          logoImg.src = logoBase64;
+        });
+      } else {
+        console.log("8. No logo provided, skipping...");
+      }
+
+      console.log("10. Creating download link...");
+      const link = document.createElement("a");
+      link.download = "qr-code.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      console.log("11. Download triggered!");
+
       toast.success("QR downloaded!");
       setShowModal(false);
-    } catch {
+    } catch (err) {
+      console.error("DOWNLOAD ERROR:", err);
       toast.error("Failed to generate QR code.");
     }
   };
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <>
-      {/* trigger button */}
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={() => setShowModal(true)}
@@ -244,16 +312,14 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
         Download QR
       </motion.button>
 
-      {/* hidden file input */}
       <input
-        id="logoInput"
+        ref={fileInputRef}
         type="file"
         accept="image/*"
         style={{ display: "none" }}
         onChange={handleLogoChange}
       />
 
-      {/* modal */}
       <AnimatePresence>
         {showModal && (
           <ModalOverlay onClose={() => setShowModal(false)}>
@@ -268,7 +334,7 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
                 boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
               }}
             >
-              {/* modal header */}
+              {/* header */}
               <div
                 style={{
                   display: "flex",
@@ -320,7 +386,7 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
                 </motion.button>
               </div>
 
-              {/* QR preview area */}
+              {/* QR preview */}
               <div
                 style={{
                   display: "flex",
@@ -334,8 +400,8 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
                   style={{
                     borderRadius: 16,
                     overflow: "hidden",
-                    background: "#fff",
                     padding: 8,
+                    background: "#0c0c10",
                     boxShadow: "0 0 0 0.5px rgba(255,255,255,0.1)",
                   }}
                 >
@@ -346,7 +412,7 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
                 </div>
               </div>
 
-              {/* logo hint */}
+              {/* logo name */}
               {logoName && (
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -373,9 +439,9 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
                 }}
               >
                 <ModalBtn
-                  onClick={() => document.getElementById("logoInput")?.click()}
+                  onClick={() => fileInputRef.current?.click()}
                   icon={<FaUpload size={11} />}
-                  label={logoUrl ? "Change Logo" : "Upload Logo"}
+                  label={logoUrl ? "Change Logo" : "Upload Logo (optional)"}
                   variant="blue"
                 />
                 <ModalBtn

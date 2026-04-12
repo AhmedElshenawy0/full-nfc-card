@@ -250,12 +250,12 @@ const ServiceCard = ({
             label="Edit Service"
             variant="green"
           />
-          <ActionBtn
+          {/* <ActionBtn
             onClick={() => onDownload(ele)}
             icon={<FiDownload size={13} />}
             label="Download QR"
             variant="purple"
-          />
+          /> */}
         </div>
 
         {/* QR section */}

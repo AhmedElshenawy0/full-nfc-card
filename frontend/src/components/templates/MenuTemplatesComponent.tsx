@@ -68,7 +68,7 @@ const ThumbCard = ({
     transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
     style={{
       position: "relative",
-      width: "calc(50% - 6px)",
+      // width: "calc(50% - 6px)",
       aspectRatio: "1 / 1",
       borderRadius: 14,
       overflow: "hidden",
@@ -306,7 +306,11 @@ const MenuTemplatesComponent: React.FC = () => {
             {/* thumbnails */}
             <motion.div
               layout
-              style={{ display: "flex", flexWrap: "wrap", gap: 12 }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                gap: 12,
+              }}
             >
               <AnimatePresence>
                 {menuImages.map((file, i) => (
