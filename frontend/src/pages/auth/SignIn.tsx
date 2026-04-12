@@ -168,6 +168,9 @@ export const SignIn = () => {
       return;
     }
     if (isAuth) {
+      console.log("isAuth triggered");
+      console.log("isSuccess:", isSuccess);
+      console.log("data:", data);
       const userCard = (data.user.soldServices ?? []).find(
         (e: any) => e?.card_id === gCardId,
       );
