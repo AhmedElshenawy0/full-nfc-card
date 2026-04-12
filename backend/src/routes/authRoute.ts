@@ -96,7 +96,7 @@ router.get(
 
     next();
   },
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"] }),
 );
 router.get("/google/callback", (req, res, next) => {
   passport.authenticate(
@@ -104,33 +104,35 @@ router.get("/google/callback", (req, res, next) => {
     (
       err: any,
       user: Express.User | false,
-      info: { message?: string } | undefined
+      info: { message?: string } | undefined,
     ) => {
       if (err || !user) {
         const errorMsg = info?.message || "Authentication failed";
         return res.redirect(
           `${process.env.CLIENT_URL}/signin?error=${encodeURIComponent(
-            errorMsg
-          )}`
+            errorMsg,
+          )}`,
         );
       }
 
       req.logIn(user, (err) => {
         if (err) {
           return res.redirect(
-            `${process.env.CLIENT_URL}/signin?error=Login failed`
+            `${process.env.CLIENT_URL}/signin?error=Login failed`,
           );
         }
 
         const cardType = req.cookies.cardType;
         const cardId = req.cookies.cardId;
         const uniqueCode = req.cookies.uniqueCode;
+        console.log(req?.cookies);
+        console.log("req?.cookies");
 
         return res.redirect(
-          `${process.env.CLIENT_URL}/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}&gUniqueCode=${uniqueCode}`
+          `${process.env.CLIENT_URL}/signin?auth=true&gCardType=${cardType}&gCardId=${cardId}&gUniqueCode=${uniqueCode}`,
         );
       });
-    }
+    },
   )(req, res, next);
 });
 
