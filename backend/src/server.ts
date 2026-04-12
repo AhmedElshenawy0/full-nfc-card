@@ -33,9 +33,9 @@ app.set("trust proxy", true);
 
 app.use(
   cors({
-    // origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
-  })
+  }),
 );
 app.use(express.json({ limit: "50mb" }));
 // app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -54,7 +54,7 @@ app.use(
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -77,7 +77,7 @@ const fileSizeErrorHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): express.Response | void => {
   if (err.code === "LIMIT_FILE_SIZE") {
     return res
