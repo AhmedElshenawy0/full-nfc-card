@@ -17,6 +17,8 @@ import "./utils/passport";
 import path from "path";
 import { errorHandler } from "./middleware/ErrorHandler";
 import * as fs from "fs";
+import connectPg from "connect-pg-simple";
+import { Pool } from "pg";
 dotenv.config();
 
 const app = express();
@@ -42,14 +44,20 @@ app.use(express.json({ limit: "50mb" }));
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
 app.use(cookieParser());
-
+const PgSession = connectPg(session);
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 app.use(
   session({
+    store: new PgSession({
+      pool,
+      tableName: "session",
+      createTableIfMissing: true,
+    }),
     secret: process.env.SESSION_SECRET || "your-secret",
-    resave: false, // Avoid recreating session on each request
-    saveUninitialized: false, // Do not save empty sessions
+    resave: false,
+    saveUninitialized: false,
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
