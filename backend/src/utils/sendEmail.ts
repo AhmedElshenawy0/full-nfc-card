@@ -18,8 +18,8 @@ export const sendVerificationEmail = async (
 
     await resend.emails
       .send({
-        from: "onboarding@resend.dev", // change to your domain later
-        to: "shenawy100@gmail.com",
+        from: "SignupTap <noreply@signuptap.com>",
+        to: email,
         subject: "Verify your email",
         html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background-color: #3a0d4e; padding: 40px 30px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); color: white;">
