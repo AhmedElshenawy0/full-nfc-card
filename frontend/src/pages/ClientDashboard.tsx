@@ -12,7 +12,8 @@ import { useEffect, useState } from "react";
 import { MdNfc } from "react-icons/md";
 import { HiOutlineMenuAlt2 } from "react-icons/hi";
 import { FiEdit2, FiEye, FiLogOut, FiGrid, FiZap } from "react-icons/fi";
-
+import QRCodeStyling from "qr-code-styling";
+import { FiDownload } from "react-icons/fi";
 // ─── tiny pill badge ──────────────────────────────────────────────────────────
 const Badge = ({ type }: { type: string }) => {
   const isMenu = type === "menu";
@@ -123,9 +124,16 @@ interface ServiceCardProps {
   index: number;
   onView: (id: number) => void;
   onEdit: (id: number, type: string) => void;
+  onDownload: (ele: SoldService) => void; // ← add this
 }
 
-const ServiceCard = ({ ele, index, onView, onEdit }: ServiceCardProps) => {
+const ServiceCard = ({
+  ele,
+  index,
+  onView,
+  onEdit,
+  onDownload,
+}: ServiceCardProps) => {
   const isMenu = ele.type === "menu";
   const accentColor = isMenu
     ? "linear-gradient(90deg,#14532d,#16a34a,transparent)"
@@ -242,6 +250,12 @@ const ServiceCard = ({ ele, index, onView, onEdit }: ServiceCardProps) => {
             label="Edit Service"
             variant="green"
           />
+          <ActionBtn
+            onClick={() => onDownload(ele)}
+            icon={<FiDownload size={13} />}
+            label="Download QR"
+            variant="purple"
+          />
         </div>
 
         {/* QR section */}
@@ -336,6 +350,58 @@ const EmptyState = () => (
 
 // ─── main dashboard ───────────────────────────────────────────────────────────
 const ClientDashboard = () => {
+  const circleImage = (src: string, size = 160): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
+
+  const handleDownloadQr = async (ele: SoldService) => {
+    const qrUrl = `${window.location.origin}/${
+      ele.type === "vCard" ? "template" : ele.type === "menu" ? "menu" : ""
+    }?id=${ele.id}`;
+
+    try {
+      const circularLogo = await circleImage("/elrateb.jpg", 160);
+      const qrCode = new QRCodeStyling({
+        width: 2048,
+        height: 2048,
+        data: qrUrl,
+        margin: 20,
+        dotsOptions: { color: "#4ade80", type: "extra-rounded" },
+        cornersSquareOptions: { color: "#4ade80", type: "extra-rounded" },
+        cornersDotOptions: { color: "#16a34a", type: "dot" },
+        backgroundOptions: { color: "#0c0c10" },
+        image: circularLogo,
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 12,
+          imageSize: 0.3,
+          saveAsBlob: true,
+        },
+        qrOptions: { errorCorrectionLevel: "H" },
+      });
+      qrCode.download({ name: `qr-service-${ele.id}`, extension: "svg" });
+      toast.success("QR code downloaded!");
+    } catch {
+      toast.error("Failed to generate QR code.");
+    }
+  };
   const navigate = useNavigate();
   const { data, refetch } = useGetClientInfoQuery(undefined);
   const [logoutHovered, setLogoutHovered] = useState(false);
@@ -487,6 +553,7 @@ const ClientDashboard = () => {
                     index={i}
                     onView={handleViewDemoClick}
                     onEdit={handleEditServiceClick}
+                    onDownload={handleDownloadQr} // ← add this
                   />
                 ))}
               </div>
