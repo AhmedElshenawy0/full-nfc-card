@@ -4,6 +4,7 @@ import QRCodeStyling from "qr-code-styling";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaDownload, FaTimes, FaUpload } from "react-icons/fa";
 import { FiDownload } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 interface QRWithImageProps {
   qrUrl: string;
@@ -119,7 +120,26 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
   const [btnHov, setBtnHov] = useState(false);
   const qrCodeRef = useRef<QRCodeStyling | null>(null);
   const qrPreviewRef = useRef<HTMLDivElement | null>(null);
-
+  const circleImage = (src: string, size = 160): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d")!;
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+  };
   const generateQR = useCallback(() => {
     if (!qrPreviewRef.current) return;
     qrPreviewRef.current.innerHTML = "";
@@ -159,9 +179,37 @@ const QRWithImage = ({ qrUrl }: QRWithImageProps) => {
     setLogoUrl(URL.createObjectURL(file));
   };
 
-  const handleDownload = () => {
-    qrCodeRef.current?.download({ name: "qr-code", extension: "png" });
-    setShowModal(false);
+  const handleDownload = async () => {
+    try {
+      const circularLogo = logoUrl
+        ? await circleImage(logoUrl, 160)
+        : await circleImage("/elrateb.jpg", 160);
+
+      const qrCode = new QRCodeStyling({
+        width: 2048,
+        height: 2048,
+        data: qrUrl,
+        margin: 20,
+        dotsOptions: { color: "#4ade80", type: "extra-rounded" },
+        cornersSquareOptions: { color: "#4ade80", type: "extra-rounded" },
+        cornersDotOptions: { color: "#16a34a", type: "dot" },
+        backgroundOptions: { color: "#0c0c10" },
+        image: circularLogo,
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 12,
+          imageSize: 0.3,
+          saveAsBlob: true,
+        },
+        qrOptions: { errorCorrectionLevel: "H" },
+      });
+
+      qrCode.download({ name: "qr-code", extension: "svg" });
+      toast.success("QR downloaded!");
+      setShowModal(false);
+    } catch {
+      toast.error("Failed to generate QR code.");
+    }
   };
 
   return (
