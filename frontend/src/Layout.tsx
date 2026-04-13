@@ -160,7 +160,7 @@ const Layout = () => {
   const location = useLocation();
 
   const hideHeaderRoutes = ["/template", "/menu-template", "/edit-template"];
-  const noPaddingRoutes = ["/menu", "/template"];
+  const noPaddingRoutes = ["/menu-template", "/template"];
   const hasPadding = !noPaddingRoutes.includes(location.pathname);
   const showHeader = !hideHeaderRoutes.includes(location.pathname);
 
