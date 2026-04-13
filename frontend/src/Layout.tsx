@@ -162,8 +162,9 @@ const Layout = () => {
   const hideHeaderRoutes = ["/template", "/menu-template", "/edit-template"];
   const noPaddingRoutes = ["/menu-template", "/template"];
   const hasPadding = !noPaddingRoutes.includes(location.pathname);
-  const showHeader = !hideHeaderRoutes.includes(location.pathname);
-
+  const showHeader = !hideHeaderRoutes.some((route) =>
+    location.pathname.startsWith(route),
+  );
   return (
     <div
       className="min-h-screen relative overflow-hidden text-gray-200"
