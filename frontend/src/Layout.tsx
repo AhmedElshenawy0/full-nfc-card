@@ -171,11 +171,14 @@ const Layout = () => {
         background: `linear-gradient(145deg, ${BRAND.purple} 0%, #1c0628 45%, #000000 100%)`,
       }}
     >
-      <GridOverlay />
-      <GlowBlobs />
-      {showHeader && <NFCRings />}
-      <ScanLine />
-
+      {showHeader && (
+        <>
+          <GridOverlay />
+          <GlowBlobs />
+          <NFCRings />
+          <ScanLine />
+        </>
+      )}
       <div className={`relative z-10 ${hasPadding ? "px-5 py-7" : ""}`}>
         {showHeader && (
           <motion.header
@@ -307,9 +310,9 @@ const Layout = () => {
 
         <motion.main
           key={location.pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          // initial={{ opacity: 0, y: 10 }}
+          // animate={{ opacity: 1, y: 0 }}
+          // transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <Outlet />
         </motion.main>
