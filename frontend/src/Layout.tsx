@@ -183,9 +183,9 @@ const Layout = () => {
       <div className={`relative z-10 ${hasPadding ? "px-5 py-7" : ""}`}>
         {showHeader && (
           <motion.header
-            // initial={{ opacity: 0, y: -20 }}
-            // animate={{ opacity: 1, y: 0 }}
-            // transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.01 }}
             className="flex items-center mb-12"
           >
             {/* Logo with spinning brand-colored border */}
