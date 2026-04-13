@@ -23,6 +23,7 @@ const FirstUITest = ({
 }) => {
   const [textColor, setTextColor] = useState("text-white");
   const [textBtnColor, setTextBtnColor] = useState("text-black");
+  console.log(formData);
 
   useEffect(() => {
     setTextColor(

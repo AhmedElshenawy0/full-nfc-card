@@ -24,7 +24,7 @@ const ChangeTheme = ({
       label: "Theme 1",
       component: (
         <FourthUiTest
-          formData={dummyData}
+          formData={dummyData[0]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -36,7 +36,7 @@ const ChangeTheme = ({
       label: "Theme 2",
       component: (
         <SecondUiTest
-          formData={dummyData}
+          formData={dummyData[1]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -48,7 +48,7 @@ const ChangeTheme = ({
       label: "Theme 3",
       component: (
         <ThirdUITest
-          formData={dummyData}
+          formData={dummyData[2]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -60,7 +60,7 @@ const ChangeTheme = ({
       label: "Theme 4",
       component: (
         <FirstUITest
-          formData={dummyData}
+          formData={dummyData[3]}
           tempMainBackground={null}
           tempButtonBackground={null}
         />
@@ -86,18 +86,20 @@ const ChangeTheme = ({
     >
       <div
         style={{
-          position: "absolute",
+          position: "fixed", // ← was "absolute"
           right: 0,
           top: 0,
+          left: 0, // ← add this
+          bottom: 0, // ← add this
           width: "100%",
+          height: "100vh", // ← full viewport height
           backgroundColor: "#0d0d10",
-          border: "4px solid red",
           zIndex: 50,
-          minHeight: "100%",
           padding: "28px 16px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          overflowY: "auto", // ← scroll happens here
         }}
       >
         {/* Header */}
