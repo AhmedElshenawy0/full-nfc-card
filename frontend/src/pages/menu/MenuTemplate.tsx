@@ -412,6 +412,11 @@ const MenuTemplate: React.FC = () => {
         display: "flex",
         flexDirection: "column",
         background: "#0a0a0c",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
       }}
     >
       {/* ── sticky header ── */}
@@ -422,14 +427,14 @@ const MenuTemplate: React.FC = () => {
           zIndex: 100,
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "center",
           padding: "13px 16px",
           background: "rgba(10,10,12,0.88)",
           backdropFilter: "blur(20px)",
           borderBottom: "0.5px solid rgba(255,255,255,0.07)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
               width: 30,
@@ -467,7 +472,7 @@ const MenuTemplate: React.FC = () => {
               {images.length} image{images.length !== 1 ? "s" : ""}
             </p>
           </div>
-        </div>
+        </div> */}
 
         <span
           style={{
@@ -481,7 +486,7 @@ const MenuTemplate: React.FC = () => {
             letterSpacing: "0.05em",
           }}
         >
-          scroll to browse
+          scroll to browse our menu
         </span>
       </div>
 

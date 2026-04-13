@@ -241,13 +241,13 @@ const Layout = () => {
             {/* Typewriter text */}
             <div className="flex flex-col">
               <span
-                className="text-[9px] mb-1 tracking-[0.3em] uppercase"
+                className="text-[8px] mb-1 tracking-[0.3em] uppercase"
                 style={{
                   color: `${BRAND.greenAccent}`,
                   fontFamily: "monospace",
                 }}
               >
-                NFC · CARD · SYSTEM
+                SIGNUP · NFC · SOLUTION
               </span>
               <div
                 className="text-[17px] font-light"

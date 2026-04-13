@@ -65,7 +65,7 @@ const Field = ({
         style={{
           display: "block",
           fontSize: 12,
-          color: focused ? "rgba(167,139,250,0.8)" : "rgba(255,255,255,0.35)",
+          color: "rgba(167,139,250,0.8)",
           marginBottom: 7,
           fontFamily: "'DM Mono', monospace",
           letterSpacing: "0.07em",
@@ -82,7 +82,7 @@ const Field = ({
             left: 13,
             top: "50%",
             transform: "translateY(-50%)",
-            color: focused ? "rgba(167,139,250,0.7)" : "rgba(255,255,255,0.25)",
+            color: "rgba(167,139,250,0.7)",
             display: "flex",
             transition: "color 0.2s",
             pointerEvents: "none",
@@ -102,10 +102,9 @@ const Field = ({
             width: "100%",
             padding: "11px 42px 11px 38px",
             borderRadius: 12,
-            border: `0.5px solid ${focused ? "rgba(167,139,250,0.45)" : "rgba(255,255,255,0.09)"}`,
-            background: focused
-              ? "rgba(88,28,135,0.1)"
-              : "rgba(255,255,255,0.04)",
+            border: `0.5px solid rgba(167,139,250,0.45)`,
+            background: "rgba(88,28,135,0.1)",
+
             color: "rgba(255,255,255,0.85)",
             fontSize: 14,
             fontFamily: "'DM Sans', sans-serif",
@@ -290,7 +289,7 @@ const RootLayout = () => {
     if (verifyCard.message === "Go to signup") {
       setShowConfirmBtn(true);
     } else if (verifyCard.message === "success") {
-      toast.success(`Welcome, ${verifyCard.name}`);
+      // toast.success(`Welcome, ${verifyCard.name}`);
       if (verifyCard.cardType === "vCard") {
         navigate(`/template/?id=${verifyCard.cardId}`);
       } else if (verifyCard.cardType === "menu") {
