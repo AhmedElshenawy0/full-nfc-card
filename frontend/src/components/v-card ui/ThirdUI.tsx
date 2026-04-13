@@ -40,7 +40,7 @@ const ThirdUI = ({ data }: { data: any }) => {
   const amberBorder = "rgba(251,191,36,0.2)";
 
   return (
-    <div className="min-h-screen max-w-[500px] mx-auto flex items-center bg-[#050505] p-6">
+    <div className="min-h-screen max-w-[500px] mx-auto flex items-center bg-[#050505] ">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -51,7 +51,7 @@ const ThirdUI = ({ data }: { data: any }) => {
             : "linear-gradient(135deg, #111 0%, #1a1a1a 50%, #0d0d0d 100%)",
           border: "0.5px solid rgba(255,255,255,0.08)",
         }}
-        className="w-full rounded-2xl overflow-hidden"
+        className="w-full min-h-screen rounded-2xl overflow-hidden"
       >
         {/* Hero image with overlay */}
         <div className="relative">

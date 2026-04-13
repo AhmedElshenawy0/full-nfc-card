@@ -365,7 +365,7 @@ const CustomizeTemplate = () => {
           {/* Appearance */}
           <Card title={sectionLabel("Appearance")} style={{ marginBottom: 16 }}>
             {/* Change Color */}
-            <Button
+            {/* <Button
               type="default"
               block
               onClick={() => setIsColorOpen(true)}
@@ -384,7 +384,7 @@ const CustomizeTemplate = () => {
               <Text type="secondary" style={{ fontSize: 12 }}>
                 Customize →
               </Text>
-            </Button>
+            </Button> */}
 
             {/* {isColorOpen && (
               <ChangeBgColor
