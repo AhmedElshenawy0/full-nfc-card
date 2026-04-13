@@ -117,7 +117,186 @@ const ActionBtn = ({ onClick, icon, label, variant }: ActionBtnProps) => {
     </motion.button>
   );
 };
+const LogoutModal = ({
+  onConfirm,
+  onCancel,
+  isLoading,
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}) => {
+  const [confirmHov, setConfirmHov] = useState(false);
+  const [cancelHov, setCancelHov] = useState(false);
 
+  return (
+    // backdrop
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={onCancel}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        backdropFilter: "blur(4px)",
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      {/* modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 360,
+          borderRadius: 20,
+          background: "rgba(15,15,20,0.95)",
+          border: "0.5px solid rgba(255,255,255,0.1)",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+          overflow: "hidden",
+        }}
+      >
+        {/* top accent */}
+        <div
+          style={{
+            height: 2,
+            background: "linear-gradient(90deg,#7f1d1d,#ef4444,transparent)",
+          }}
+        />
+
+        <div style={{ padding: "24px 24px 20px" }}>
+          {/* icon */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(127,29,29,0.2)",
+              border: "0.5px solid rgba(239,68,68,0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <FiLogOut size={18} color="rgba(252,165,165,0.85)" />
+          </div>
+
+          {/* text */}
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: 15,
+              fontWeight: 500,
+              color: "#fff",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Logout?
+          </p>
+          <p
+            style={{
+              margin: "0 0 24px",
+              fontSize: 13,
+              color: "rgba(255,255,255,0.35)",
+              fontFamily: "'DM Sans', sans-serif",
+              lineHeight: 1.6,
+            }}
+          >
+            You'll need to sign in again to access your dashboard.
+          </p>
+
+          {/* buttons */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={onCancel}
+              onMouseEnter={() => setCancelHov(true)}
+              onMouseLeave={() => setCancelHov(false)}
+              disabled={isLoading}
+              style={{
+                flex: 1,
+                padding: "10px 0",
+                borderRadius: 12,
+                border: "0.5px solid rgba(255,255,255,0.1)",
+                background: cancelHov
+                  ? "rgba(255,255,255,0.07)"
+                  : "rgba(255,255,255,0.04)",
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 13,
+                fontWeight: 500,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: "pointer",
+                transition: "background 0.15s",
+              }}
+            >
+              Cancel
+            </button>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onConfirm}
+              onMouseEnter={() => setConfirmHov(true)}
+              onMouseLeave={() => setConfirmHov(false)}
+              disabled={isLoading}
+              style={{
+                flex: 1,
+                padding: "10px 0",
+                borderRadius: 12,
+                border: "0.5px solid rgba(239,68,68,0.3)",
+                background: confirmHov
+                  ? "rgba(127,29,29,0.5)"
+                  : "rgba(127,29,29,0.3)",
+                color: "rgba(252,165,165,0.95)",
+                fontSize: 13,
+                fontWeight: 500,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                transition: "background 0.15s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 7,
+                opacity: isLoading ? 0.7 : 1,
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 0.8,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    style={{ display: "flex" }}
+                  >
+                    <FiLogOut size={13} />
+                  </motion.span>
+                  Signing out…
+                </>
+              ) : (
+                <>
+                  <FiLogOut size={13} />
+                  Sign out
+                </>
+              )}
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 // ─── service card ─────────────────────────────────────────────────────────────
 interface ServiceCardProps {
   ele: SoldService;
@@ -350,6 +529,8 @@ const EmptyState = () => (
 
 // ─── main dashboard ───────────────────────────────────────────────────────────
 const ClientDashboard = () => {
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const circleImage = (src: string, size = 160): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -428,8 +609,9 @@ const ClientDashboard = () => {
     try {
       const res = await logout(undefined).unwrap();
       if (res?.message === "success") {
+        setShowLogoutModal(false);
         toast.success("Logged out successfully!");
-        navigate("/signin?loggedOut=true");
+        navigate("/");
       }
     } catch {
       toast.error("Logout failed. Try again!");
@@ -508,7 +690,7 @@ const ClientDashboard = () => {
             {/* logout */}
             <motion.button
               whileTap={{ scale: 0.96 }}
-              onClick={handleLogout}
+              onClick={() => setShowLogoutModal(true)} // ← changed
               onMouseEnter={() => setLogoutHovered(true)}
               onMouseLeave={() => setLogoutHovered(false)}
               style={{
@@ -561,6 +743,15 @@ const ClientDashboard = () => {
           </AnimatePresence>
         </motion.div>
       )}
+      <AnimatePresence>
+        {showLogoutModal && (
+          <LogoutModal
+            onConfirm={handleLogout}
+            onCancel={() => setShowLogoutModal(false)}
+            isLoading={isLoading}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

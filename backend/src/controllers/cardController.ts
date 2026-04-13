@@ -9,14 +9,15 @@ import { validate as isUuid } from "uuid";
 export const verifyCard = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { unique_code } = req.query;
 
   try {
-    // CHECK if unique code isn't provided
     if (!unique_code) {
-      res.status(403).json({ message: "You're not allowed with SignUp" });
+      res
+        .status(403)
+        .json({ message: "You're not allowed without a card code" });
       return;
     }
 
@@ -25,25 +26,25 @@ export const verifyCard = async (
       include: { sold_service: true },
     });
 
-    // CHECK if card isn't exist
-    if (!card?.unique_code) {
+    if (!card) {
       res.status(404).json({ message: "Card not found" });
       return;
     }
 
-    console.log(card?.unique_code);
-    if (!card?.sold_service?.client_id) {
+    // Card is unclaimed — send anyone (owner or stranger) to signup to claim it
+    if (!card.sold_service?.client_id) {
       res.status(200).json({
         message: "Go to signup",
-        type: card?.nfc_type,
-        cardId: card?.id,
-        uniqueCode: card?.unique_code,
+        type: card.nfc_type,
+        cardId: card.id,
+        uniqueCode: card.unique_code,
       });
       return;
     }
 
+    // Card is claimed — verify the linked client exists
     const client = await prisma.client.findUnique({
-      where: { id: card?.sold_service?.client_id },
+      where: { id: card.sold_service.client_id },
     });
 
     if (!client) {
@@ -51,31 +52,15 @@ export const verifyCard = async (
       return;
     }
 
-    const userSession = req?.user;
-
-    console.log("from card controller get user session", userSession);
-    console.log("from card controller get user session", req.isAuthenticated());
-
-    if (!userSession?.email) {
-      res.status(401).json({
-        message: "Authentication missing, Please Sign in",
-        type: card?.nfc_type,
-        cardId: card?.id,
-        cliientId: client?.id,
-        uniqueCode: card?.unique_code,
-      });
-      return;
-    }
-
-    // if (userSession?.email !== client?.email) {
-    //   res.status(403).json({ message: "You're not authorized" });
-    //   return;
-    // }
-
-    res.status(200).json({ message: "success", name: client?.first_name });
+    // Card is claimed and client exists — send anyone to the service demo
+    res.status(200).json({
+      message: "success",
+      name: client.first_name,
+      cardId: card.sold_service.id,
+      cardType: card.nfc_type,
+    });
   } catch (err) {
-    const error = new Error(`❌ Error in verify card`);
-    next(error);
+    next(new Error("❌ Error in verifyCard"));
   }
 };
 
@@ -83,7 +68,7 @@ export const verifyCard = async (
 export const getAllCards = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const cards = await prisma.card.findMany({
@@ -100,7 +85,7 @@ export const getAllCards = async (
 export const getOneCard = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const param = req.params;
 
@@ -130,7 +115,7 @@ export const getOneCard = async (
 export const createCard = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const body = req.body;
 
@@ -159,7 +144,7 @@ export const createCard = async (
 export const updateCard = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const body = req.body;
   const id = req?.params?.id;
@@ -182,7 +167,7 @@ export const updateCard = async (
 export const deleteCard = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { unique_code } = req.params;
 

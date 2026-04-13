@@ -21,6 +21,7 @@ import {
 import { FaUnlockAlt } from "react-icons/fa";
 import { createPortal } from "react-dom";
 import QRCodeStyling from "qr-code-styling";
+import QRWithImage from "../../components/global/QrCode";
 
 // ─── tiny hover button ────────────────────────────────────────────────────────
 interface ActionBtnProps {
@@ -294,7 +295,7 @@ interface CardTileProps {
   onDeactivate: (card: Card) => void;
   onViewService: (card: Card) => void;
   onCopyLink: (card: Card) => void;
-  onDownloadQr: (card: Card) => void;
+  // remove onDownloadQr
 }
 
 const CardTile = ({
@@ -303,7 +304,6 @@ const CardTile = ({
   onDeactivate,
   onViewService,
   onCopyLink,
-  onDownloadQr,
 }: CardTileProps) => {
   const isMenu = card.nfc_type === "menu";
   const hasClient = !!card.client_id;
@@ -475,12 +475,11 @@ const CardTile = ({
                 label="Copy Link"
                 variant="blue"
               />
-              <ActionBtn
-                onClick={() => onDownloadQr(card)}
-                icon={<FiDownload size={12} />}
-                label="Download QR"
-                variant="green"
-              />
+              <div style={{ flex: 1 }}>
+                <QRWithImage
+                  qrUrl={`https://signuptap.com/?unique_code=${card.unique_code}`}
+                />
+              </div>
             </>
           ) : (
             <ActionBtn
@@ -583,95 +582,6 @@ const Cards = () => {
 
   // ─── download QR ────────────────────────────────────────────────────────────
   // ── circle-crop any image URL → base64 ──────────────────────────
-  const circleImage = (src: string, size = 160): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d")!;
-
-        // clip to circle
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-
-        ctx.drawImage(img, 0, 0, size, size);
-        resolve(canvas.toDataURL("image/png"));
-      };
-      img.onerror = reject;
-      img.src = src;
-    });
-  };
-  const downloadQr = async (card: Card) => {
-    if (!card.unique_code) {
-      toast.error("Invalid card");
-      return;
-    }
-
-    const qrUrl = `https://signuptap.com/?unique_code=${card?.unique_code}`;
-
-    try {
-      // 1. crop logo to circle first
-      const circularLogo = await circleImage("/elrateb.jpg", 160);
-
-      // 2. build QR with circular logo
-      const qrCode = new QRCodeStyling({
-        width: 2048, // ← high res
-        height: 2048,
-        data: qrUrl,
-        margin: 20, // ← scale margin with size
-
-        dotsOptions: {
-          color: "#4ade80",
-          type: "extra-rounded",
-        },
-
-        cornersSquareOptions: {
-          color: "#4ade80",
-          type: "extra-rounded",
-        },
-
-        cornersDotOptions: {
-          color: "#16a34a",
-          type: "dot",
-        },
-
-        backgroundOptions: {
-          color: "#0c0c10",
-        },
-
-        image: circularLogo,
-        imageOptions: {
-          crossOrigin: "anonymous",
-          margin: 12, // ← scale with size
-          imageSize: 0.3, // ← lower this, 0.5 is too big and kills scannability
-          saveAsBlob: true,
-        },
-
-        qrOptions: {
-          errorCorrectionLevel: "H",
-        },
-      });
-
-      // qrCode.download({
-      //   name: `qr-card-${card.id}`,
-      //   extension: "png", // ← PNG because you have a logo
-      // });
-
-      qrCode.download({
-        name: `qr-card-${card.id}`,
-        extension: "svg",
-      });
-
-      toast.success("QR code downloaded!");
-    } catch {
-      toast.error("Failed to generate QR code.");
-    }
-  };
 
   const activeCount = sortedCards.filter((c: Card) => c.client_id).length;
 
@@ -774,7 +684,6 @@ const Cards = () => {
                 }}
                 onViewService={viewService}
                 onCopyLink={copyLink}
-                onDownloadQr={downloadQr}
               />
             ))}
           </AnimatePresence>

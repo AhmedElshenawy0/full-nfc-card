@@ -10,10 +10,14 @@ import { useGetAllCardsQuery } from "../../store/apiSlice/CardSlice";
 import { useEffect, useState } from "react";
 import { Card } from "../../types/types";
 import Snipper from "../../components/global/Snipper";
+import { FiLogOut } from "react-icons/fi";
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [logout, { isError, isSuccess: logoutIsSuccess }] = useLogoutMutation();
+  const [
+    logout,
+    { isError, isSuccess: logoutIsSuccess, isLoading: isLogoutLoading },
+  ] = useLogoutMutation();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
@@ -21,7 +25,7 @@ export const AdminDashboard = () => {
       const response = await logout(undefined).unwrap();
       if (response?.message === "success") {
         toast.success("Logged out successfully!");
-        navigate("/signin?loggedOut=true");
+        navigate("/");
       }
     } catch (err) {
       toast.error("Logout failed. Try again!");
@@ -31,7 +35,7 @@ export const AdminDashboard = () => {
   useEffect(() => {
     if (logoutIsSuccess) {
       toast.success("Logged out successfully!");
-      navigate("/signin?loggedOut=true");
+      navigate("/");
     }
     if (isError) toast.error("Logout failed. Try again!");
   }, [logoutIsSuccess, isError, navigate]);
@@ -343,11 +347,24 @@ export const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150"
+                  className="flex-1 py-2.5  items-center rounded-xl text-[13px] font-medium transition-all duration-150"
                   style={{
                     background: "rgba(127,29,29,0.35)",
                     border: "0.5px solid rgba(239,68,68,0.25)",
                     color: "rgba(252,165,165,0.9)",
+                    flex: 1,
+                    padding: "10px 0",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    fontFamily: "'DM Sans', sans-serif",
+                    // cursor: isLoading ? "not-allowed" : "pointer",
+                    transition: "background 0.15s",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                    opacity: isLogoutLoading ? 0.7 : 1,
                   }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.background = "rgba(127,29,29,0.55)")
@@ -356,7 +373,27 @@ export const AdminDashboard = () => {
                     (e.currentTarget.style.background = "rgba(127,29,29,0.35)")
                   }
                 >
-                  Logout
+                  {isLogoutLoading ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 0.8,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <FiLogOut size={13} />
+                      </motion.span>
+                      Signing out…
+                    </>
+                  ) : (
+                    <>
+                      <FiLogOut size={13} />
+                      <span> Sign out</span>
+                    </>
+                  )}
                 </button>
               </div>
             </motion.div>

@@ -22,29 +22,23 @@ const ProtectAdminPage: React.FC<ProtectAdminPageProps> = ({ children }) => {
   const [toastShown, setToastShown] = useState(false);
 
   useEffect(() => {
-    if (toastShown || isLoading) return;
+    if (isLoading || toastShown) return;
 
     if (data?.user?.email) {
-      if (data?.user?.role !== "admin") {
-        console.log("admin only");
-
+      if (data.user.role !== "admin") {
         toast.error("Access Forbidden: Admins only");
-        console.log("access forbidden");
-
-        setTimeout(() => {
-          navigate("/", { replace: true });
-        }, 1000);
+        setTimeout(() => navigate("/", { replace: true }), 1000);
+        setToastShown(true);
       }
-      setToastShown(true);
       return;
     }
-    if ((error as ApiError | any)?.data?.message === "Unauthorized") {
-      toast.error("You must sign in first.");
-      navigate("/signin");
+
+    if (!data?.user && error) {
+      // No toast here — just silently redirect
+      navigate("/", { replace: true });
       setToastShown(true);
-      return;
     }
-  }, [data, error, navigate, isLoading, toastShown, isError]);
+  }, [data, error, isLoading, toastShown, navigate]);
 
   if (isLoading) return <Snipper />;
 
