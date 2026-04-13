@@ -743,7 +743,7 @@ const RootLayout = () => {
                         onClick={() => {
                           const name = requestName.trim();
                           const message = encodeURIComponent(
-                            `Hello! My name is ${name || "there"}. I'm interested in getting an NFC card. Could you please provide me with more details about the available options, pricing, and how to place an order? Thank you!`,
+                            `هلاً بك! معك ${name || "there"}. مهتم جداً بالحصول على كارت الـ NFC الخاص بكم. هل يمكن تزويدي بتفاصيل أكثر عن الخيارات المتاحة، الأسعار، وكيفية إتمام الطلب؟ شكراً جزيلاً`,
                           );
                           window.open(
                             `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`,
