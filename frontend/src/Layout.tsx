@@ -9,7 +9,7 @@ const LazyTypewriter = lazy(() => import("typewriter-effect"));
 const BRAND = {
   purple: "#3a0d4e",
   purpleLight: "#6b21a8",
-  purpleMid: "#2d0a3d",
+  purpleMid: "#390f4d",
   green: "#14532d",
   greenGlow: "#16a34a",
   greenAccent: "#4ade80",

@@ -403,7 +403,7 @@ const MenuTemplate: React.FC = () => {
       </div>
     );
 
-  if (isLoading) return <Snipper />;
+  if (isLoading || !menuService) return <Snipper />;
 
   return (
     <div

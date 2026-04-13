@@ -29,7 +29,7 @@ import {
 import GoogleLoginButton from "../components/auth/GoogleBtn";
 
 // ─── WhatsApp ─────────────────────────────────────────────────────────────────
-const WHATSAPP_NUMBER = "201500220250";
+const WHATSAPP_NUMBER = "201002255129";
 const WHATSAPP_MESSAGE = encodeURIComponent(
   "Hello! 👋 I'm interested in getting an NFC card. Could you please provide me with more details about the available options, pricing, and how to place an order? Thank you!",
 );
@@ -471,7 +471,36 @@ const RootLayout = () => {
             </div>
           </motion.div>
         </AnimatePresence>
-
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "0.5px solid rgba(167,139,250,0.2)",
+            background: "rgba(88,28,135,0.1)",
+          }}
+        >
+          <video
+            controls
+            // autoPlay
+            muted
+            // loop
+            playsInline
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+              borderRadius: 16,
+            }}
+          >
+            <source src="/herovideo.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -714,7 +743,7 @@ const RootLayout = () => {
                         onClick={() => {
                           const name = requestName.trim();
                           const message = encodeURIComponent(
-                            `Hello! My name is ${name || "there"}. I'm interested in getting an NFC card. `,
+                            `Hello! My name is ${name || "there"}. I'm interested in getting an NFC card. Could you please provide me with more details about the available options, pricing, and how to place an order? Thank you!`,
                           );
                           window.open(
                             `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`,
