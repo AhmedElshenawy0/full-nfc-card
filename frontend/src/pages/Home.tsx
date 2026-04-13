@@ -560,15 +560,29 @@ const RootLayout = () => {
           >
             {/* header */}
             <div style={{ marginBottom: 8, textAlign: "center" }}>
+              <h2
+                style={{
+                  margin: "0 0 6px",
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: "#fff",
+                  fontFamily: "'Syne', sans-serif",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                Welcome to Signup
+              </h2>
               <p
                 style={{
                   margin: 0,
                   fontSize: 13,
-                  color: "rgba(255,255,255,0.3)",
+                  color: "rgba(255,255,255,0.35)",
                   fontFamily: "'DM Sans', sans-serif",
+                  lineHeight: 1.5,
                 }}
               >
-                What would you like to do?
+                Sign in to manage your NFC card or request a new one to get
+                started.
               </p>
             </div>
 

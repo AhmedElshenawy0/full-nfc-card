@@ -243,7 +243,7 @@ const Layout = () => {
               <span
                 className="text-[9px] mb-1 tracking-[0.3em] uppercase"
                 style={{
-                  color: `${BRAND.greenAccent}70`,
+                  color: `${BRAND.greenAccent}`,
                   fontFamily: "monospace",
                 }}
               >
@@ -330,7 +330,7 @@ const Layout = () => {
             <p
               className="text-[11px] tracking-widest uppercase"
               style={{
-                color: "rgba(255,255,255,0.15)",
+                color: "rgba(255,255,255,0.35)",
                 fontFamily: "monospace",
               }}
             >
