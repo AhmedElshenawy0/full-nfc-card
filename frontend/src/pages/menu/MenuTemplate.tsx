@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useSwipe } from "../../hooks/useSwipe";
 
 // ─── lightbox ─────────────────────────────────────────────────────────────────
 const Lightbox = ({
@@ -28,8 +29,10 @@ const Lightbox = ({
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
-}) =>
-  createPortal(
+}) => {
+  const swipe = useSwipe(onNext, onPrev); // swipe left → next, swipe right → prev
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -46,6 +49,8 @@ const Lightbox = ({
         alignItems: "center",
         justifyContent: "center",
       }}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
     >
       {/* top bar */}
       <div
@@ -202,7 +207,7 @@ const Lightbox = ({
     </motion.div>,
     document.body,
   );
-
+};
 // ─── thumbnail strip ──────────────────────────────────────────────────────────
 const ThumbnailStrip = ({
   images,
