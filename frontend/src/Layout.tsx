@@ -334,7 +334,7 @@ const Layout = () => {
                 fontFamily: "monospace",
               }}
             >
-              © 2025 SignUp · All rights reserved
+              © 2026 SignUp · All rights reserved
             </p>
           </motion.footer>
         )}
