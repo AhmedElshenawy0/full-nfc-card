@@ -23,7 +23,7 @@ const ProtectAuthRoute: React.FC<ProtectAuthRouteProps> = ({ children }) => {
     }
   }, [data, error, isLoading, toastShown, navigate]);
 
-  if (isLoading || !data.user) return <Snipper />;
+  if (isLoading || !data?.user) return <Snipper />;
 
   return children ? <>{children}</> : <Outlet />;
 };
