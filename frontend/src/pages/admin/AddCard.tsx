@@ -10,6 +10,8 @@ import { BsCreditCard2Front } from "react-icons/bs";
 import BtnSnipper from "../../components/global/BtnSnipper";
 import { CustomError } from "../../types/types";
 import { motion } from "framer-motion";
+import { Pill } from "./Cards";
+import { TiArrowBackOutline } from "react-icons/ti";
 
 const CARD_TYPES = [
   {
@@ -164,7 +166,15 @@ const AddCard = () => {
           >
             New NFC Card
           </p>
-          <h1 className="text-[20px] font-medium text-white">Add Card</h1>
+          <div className="flex justify-between items-center">
+            <h1 className="text-[20px] font-medium text-white">Add Card</h1>
+            <Pill
+              label="Back"
+              active={false}
+              onClick={() => navigate(-1)}
+              icon={<TiArrowBackOutline size={14} />}
+            />
+          </div>
         </div>
 
         {/* ── Step 1: Card Type ── */}

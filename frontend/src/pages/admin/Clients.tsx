@@ -12,6 +12,9 @@ import Snipper from "../../components/global/Snipper";
 import BtnSnipper from "../../components/global/BtnSnipper";
 import toast from "react-hot-toast";
 import { Card, Client, CustomError, SoldService } from "../../types/types";
+import { Pill } from "./Cards";
+import { TiArrowBackOutline } from "react-icons/ti";
+import { useNavigate } from "react-router-dom";
 
 // ─── editable field ───────────────────────────────────────────────────────────
 const EditInput = ({
@@ -544,7 +547,7 @@ const Clients = () => {
       client?.phone?.includes(searchTerm)
     );
   });
-
+  const navigate = useNavigate();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* header */}
@@ -586,42 +589,49 @@ const Clients = () => {
         </div>
 
         {/* search */}
-        <div style={{ position: "relative" }}>
-          <FiSearch
-            size={13}
-            style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: searchFocused
-                ? "rgba(167,139,250,0.7)"
-                : "rgba(255,255,255,0.25)",
-              pointerEvents: "none",
-              transition: "color 0.2s",
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Search by name, email, phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            style={{
-              padding: "9px 14px 9px 34px",
-              borderRadius: 12,
-              border: `0.5px solid ${searchFocused ? "rgba(167,139,250,0.45)" : "rgba(255,255,255,0.09)"}`,
-              background: searchFocused
-                ? "rgba(88,28,135,0.1)"
-                : "rgba(255,255,255,0.04)",
-              color: "rgba(255,255,255,0.85)",
-              fontSize: 13,
-              outline: "none",
-              width: 280,
-              fontFamily: "'DM Sans', sans-serif",
-              transition: "border-color 0.2s, background 0.2s",
-            }}
+        <div className="flex gap-2">
+          <div style={{ position: "relative" }}>
+            <FiSearch
+              size={13}
+              style={{
+                position: "absolute",
+                left: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: searchFocused
+                  ? "rgba(167,139,250,0.7)"
+                  : "rgba(255,255,255,0.25)",
+                pointerEvents: "none",
+                transition: "color 0.2s",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search by name, email, phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              style={{
+                padding: "9px 14px 9px 34px",
+                borderRadius: 12,
+                border: `0.5px solid ${searchFocused ? "rgba(167,139,250,0.45)" : "rgba(255,255,255,0.09)"}`,
+                background: searchFocused
+                  ? "rgba(88,28,135,0.1)"
+                  : "rgba(255,255,255,0.04)",
+                color: "rgba(255,255,255,0.85)",
+                fontSize: 13,
+                outline: "none",
+                fontFamily: "'DM Sans', sans-serif",
+                transition: "border-color 0.2s, background 0.2s",
+              }}
+            />
+          </div>
+          <Pill
+            label="Back"
+            active={false}
+            onClick={() => navigate(-1)}
+            icon={<TiArrowBackOutline size={14} />}
           />
         </div>
       </div>

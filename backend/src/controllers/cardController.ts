@@ -162,9 +162,8 @@ export const updateCard = async (
     next(error);
   }
 };
-
-//=> delete card
-export const deleteCard = async (
+//=> deactivate card
+export const deactivateCard = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -197,6 +196,43 @@ export const deleteCard = async (
           disconnect: true,
         },
       },
+    });
+
+    res.status(200).json({ message: "Card has deactivated successfully" });
+  } catch (err) {
+    const error = new Error(`❌ Error in deactivate card`);
+    next(error);
+  }
+};
+//=> delete card
+export const deleteCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { unique_code } = req.params;
+
+  if (!unique_code) {
+    res.status(400).json({ message: "Missing Card unique code" });
+    return;
+  }
+  console.log("unique is ", unique_code);
+
+  const card = await prisma.card.findUnique({ where: { unique_code } });
+
+  if (!card?.unique_code) {
+    res.status(404).json({ message: "Card not found" });
+    return;
+  }
+  console.log("card is ", card);
+
+  try {
+    await prisma.soldService.deleteMany({
+      where: { card_id: card?.id },
+    });
+
+    await prisma.card.delete({
+      where: { unique_code },
     });
 
     res.status(200).json({ message: "Card has delete successfully" });

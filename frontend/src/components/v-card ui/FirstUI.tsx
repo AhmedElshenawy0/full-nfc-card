@@ -45,7 +45,7 @@ const FirstUI = ({ data }: { data: any }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative h-80 overflow-hidden"
+        className="relative h-[400px] overflow-hidden"
       >
         <img
           src={data?.image}

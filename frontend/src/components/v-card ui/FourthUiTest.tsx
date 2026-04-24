@@ -1,12 +1,6 @@
 import { FaRegSave } from "react-icons/fa";
-import { FiMapPin } from "react-icons/fi";
-import {
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaPhone,
-  FaTwitter,
-} from "react-icons/fa";
+import { FiMapPin, FiPhone } from "react-icons/fi";
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import tinycolor from "tinycolor2";
@@ -21,67 +15,56 @@ const FourthUiTest = ({
   tempMainBackground: any;
   tempButtonBackground: any;
 }) => {
-  const [textColor, setTextColor] = useState("text-white");
-  const [textBtnColor, setTextBtnColor] = useState("text-white");
-
-  useEffect(() => {
-    setTextColor(
-      tempMainBackground || formData?.mainBackground
-        ? isDark(tempMainBackground || formData?.mainBackground)
-          ? "text-white"
-          : "text-black"
-        : "text-white",
-    );
-    setTextBtnColor(
-      tempButtonBackground || formData?.buttonBackground
-        ? isDark(tempButtonBackground || formData?.buttonBackground)
-          ? "text-white"
-          : "text-black"
-        : "text-white",
-    );
-  }, [
-    tempMainBackground,
-    formData?.mainBackground,
-    tempButtonBackground,
-    formData?.buttonBackground,
-  ]);
+  const [textBtnColor, setTextBtnColor] = useState("text-black");
 
   const accentColor =
     tempMainBackground || formData?.mainBackground || "#a855f7";
   const btnColor = tempButtonBackground || formData?.buttonBackground;
+
   const lightColor = tinycolor(accentColor).lighten(40).toHexString();
   const dimColor = tinycolor(accentColor).setAlpha(0.15).toRgbString();
-  const borderColor = tinycolor(accentColor).setAlpha(0.3).toRgbString();
+  const dimColorStrong = tinycolor(accentColor).setAlpha(0.18).toRgbString();
+  const borderColor = tinycolor(accentColor).setAlpha(0.25).toRgbString();
+  const conicGradient = `conic-gradient(${accentColor}, ${lightColor}, #ec4899, ${accentColor})`;
+  const quoteColor = tinycolor(accentColor).lighten(38).toHexString();
+  const aboutColor = tinycolor(accentColor).lighten(22).toHexString();
+  const labelColor = tinycolor(accentColor).lighten(22).toHexString();
+
+  const btnBackground =
+    btnColor || `linear-gradient(135deg, ${accentColor}, ${lightColor})`;
+
+  useEffect(() => {
+    const bg = btnColor || lightColor;
+    setTextBtnColor(isDark(bg) ? "text-white" : "text-black");
+  }, [btnColor, lightColor]);
 
   return (
     <div
       style={{
         backgroundImage: `linear-gradient(160deg, #1a1a1a 0%, ${accentColor} 50%, #2d2d2d 100%)`,
       }}
-      className="w-full max-w-md mx-auto min-h-screen text-white rounded-2xl shadow-2xl overflow-hidden pb-8 relative"
+      className="w-full max-w-lg mx-auto min-h-screen text-white overflow-hidden pb-8 relative"
     >
-      {/* Glow effect */}
+      {/* Ambient glow */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none"
         style={{
-          background: `radial-gradient(circle, ${tinycolor(accentColor).setAlpha(0.2).toRgbString()} 0%, transparent 70%)`,
+          background: `radial-gradient(circle, ${tinycolor(accentColor).setAlpha(0.25).toRgbString()} 0%, transparent 70%)`,
         }}
       />
 
-      {/* Hero / Profile */}
+      {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="pt-10 pb-6 px-8 text-center relative"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-11 pb-7 px-8 text-center relative"
       >
-        {/* Avatar with conic gradient ring */}
+        {/* Avatar with conic ring */}
         <div className="relative inline-block mb-4">
           <div
             className="absolute inset-[-4px] rounded-full"
-            style={{
-              background: `conic-gradient(${accentColor}, ${lightColor}, #ec4899, ${accentColor})`,
-            }}
+            style={{ background: conicGradient }}
           />
           <div className="relative w-24 h-24 rounded-full border-[3px] border-[#1a1a1a] overflow-hidden z-10">
             <img
@@ -92,25 +75,24 @@ const FourthUiTest = ({
           </div>
         </div>
 
-        {/* Badge */}
-        <div className="mb-3">
-          <span
-            className="text-[11px] px-3 py-1 rounded-full border tracking-wide"
-            style={{ background: dimColor, borderColor, color: lightColor }}
-          >
-            {formData?.job ? formData.job.toUpperCase() : "PROFESSIONAL"}
-          </span>
-        </div>
-
-        <h2 className={`text-xl font-medium ${textColor} tracking-tight mb-1`}>
+        {/* Name */}
+        <h2 className="text-[22px] font-semibold text-white tracking-tight mb-2">
           {formData?.name}
         </h2>
-        <p
-          className="text-xs tracking-widest uppercase"
-          style={{ color: lightColor }}
-        >
-          {formData?.job}
-        </p>
+
+        {/* Single job badge */}
+        {formData?.job && (
+          <span
+            className="text-[10px] px-3.5 py-1 rounded-full border tracking-[0.1em] uppercase"
+            style={{
+              background: dimColor,
+              borderColor,
+              color: lightColor,
+            }}
+          >
+            {formData.job}
+          </span>
+        )}
       </motion.div>
 
       {/* Divider */}
@@ -121,128 +103,179 @@ const FourthUiTest = ({
         }}
       />
 
-      {/* Bio */}
-      <div
-        className="mx-6 my-4 p-4 rounded-xl"
+      {/* Bio Card */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15, duration: 0.5 }}
+        className="mx-5 my-4 p-[18px] rounded-2xl"
         style={{
-          background: "rgba(255,255,255,0.04)",
+          background: "rgba(255,255,255,0.05)",
           border: `0.5px solid ${borderColor}`,
         }}
       >
-        <p className={`text-sm italic leading-relaxed ${textColor} mb-2`}>
-          "{formData?.bio}"
-        </p>
-        <p
-          className="text-xs leading-relaxed"
-          style={{ color: tinycolor(accentColor).lighten(20).toHexString() }}
-        >
-          {formData?.about}
-        </p>
-      </div>
+        {formData?.bio && (
+          <p
+            className="text-sm italic leading-relaxed mb-2.5"
+            style={{ color: quoteColor }}
+          >
+            "{formData.bio}"
+          </p>
+        )}
+        {formData?.bio && formData?.about && (
+          <div
+            className="h-px mb-2.5"
+            style={{
+              background: tinycolor(accentColor).setAlpha(0.2).toRgbString(),
+            }}
+          />
+        )}
+        {formData?.about && (
+          <p
+            className="text-[11px] leading-relaxed"
+            style={{ color: aboutColor }}
+          >
+            {formData.about}
+          </p>
+        )}
+      </motion.div>
 
       {/* Contact */}
-      <p
-        className="text-[11px] tracking-widest uppercase px-6 mb-3"
-        style={{ color: lightColor }}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25, duration: 0.5 }}
       >
-        Contact
-      </p>
-      <div className="px-6 flex flex-col gap-2.5">
-        {/* Phone */}
-        <motion.a
-          whileHover={{ scale: 1.02 }}
-          href={`tel:+${formData?.phone}`}
-          className="flex items-center gap-3 p-3 rounded-xl"
-          style={{
-            background: "rgba(255,255,255,0.04)",
-            border: `0.5px solid ${borderColor}`,
-          }}
+        <p
+          className="text-[10px] tracking-[0.13em] uppercase px-5 mb-2.5 font-semibold"
+          style={{ color: labelColor }}
         >
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: dimColor }}
-          >
-            <FaPhone style={{ color: lightColor, fontSize: 14 }} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[11px] text-slate-400 mb-0.5">Phone</p>
-            <p className={`text-sm font-medium ${textColor}`}>
-              {formData?.phone}
-            </p>
-          </div>
-          <span className="text-slate-500 text-lg">›</span>
-        </motion.a>
-
-        {/* Address */}
-        <motion.a
-          whileHover={{ scale: 1.02 }}
-          href="#"
-          className="flex items-center gap-3 p-3 rounded-xl"
-          style={{
-            background: "rgba(255,255,255,0.04)",
-            border: `0.5px solid ${borderColor}`,
-          }}
-        >
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: dimColor }}
-          >
-            <FiMapPin style={{ color: lightColor, fontSize: 14 }} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[11px] text-slate-400 mb-0.5">Address</p>
-            <p className={`text-sm font-medium ${textColor}`}>View on map</p>
-          </div>
-          <span className="text-slate-500 text-lg">›</span>
-        </motion.a>
-      </div>
-
-      {/* Socials */}
-      <p
-        className="text-[11px] tracking-widest uppercase px-6 mt-5 mb-3"
-        style={{ color: lightColor }}
-      >
-        Social
-      </p>
-      <div className="px-6 flex gap-3">
-        {[
-          { icon: FaFacebook, color: "#60a5fa" },
-          { icon: FaTwitter, color: "#38bdf8" },
-          { icon: FaLinkedin, color: "#818cf8" },
-          { icon: FaInstagram, color: "#f472b6" },
-        ].map((s, i) => (
+          Contact
+        </p>
+        <div className="px-5 flex flex-col gap-2">
+          {/* Phone */}
           <motion.a
-            key={i}
-            whileHover={{ scale: 1.1, y: -2 }}
-            href="#"
-            target="_blank"
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            href={`tel:+${formData?.phone}`}
+            className="flex items-center gap-3 p-3.5 rounded-[14px]"
             style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "0.5px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.05)",
+              border: `0.5px solid ${borderColor}`,
             }}
           >
-            <s.icon size={16} color={s.color} />
+            <div
+              className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: dimColorStrong }}
+            >
+              <FiPhone style={{ color: lightColor, fontSize: 14 }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] text-slate-400 mb-0.5 tracking-[0.05em] uppercase">
+                Phone
+              </p>
+              <p className="text-sm font-semibold text-white">
+                {formData?.phone}
+              </p>
+            </div>
+            <div
+              className="w-[26px] h-[26px] rounded-lg flex items-center justify-center text-slate-400 text-sm"
+              style={{ background: "rgba(255,255,255,0.07)" }}
+            >
+              ›
+            </div>
           </motion.a>
-        ))}
-      </div>
+
+          {/* Address */}
+          <motion.a
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            href=""
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 p-3.5 rounded-[14px]"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: `0.5px solid ${borderColor}`,
+            }}
+          >
+            <div
+              className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: dimColorStrong }}
+            >
+              <FiMapPin style={{ color: lightColor, fontSize: 14 }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] text-slate-400 mb-0.5 tracking-[0.05em] uppercase">
+                Address
+              </p>
+              <p className="text-sm font-semibold text-white">View on map</p>
+            </div>
+            <div
+              className="w-[26px] h-[26px] rounded-lg flex items-center justify-center text-slate-400 text-sm"
+              style={{ background: "rgba(255,255,255,0.07)" }}
+            >
+              ›
+            </div>
+          </motion.a>
+        </div>
+      </motion.div>
+
+      {/* Social */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.35, duration: 0.5 }}
+      >
+        <p
+          className="text-[10px] tracking-[0.13em] uppercase px-5 mt-5 mb-2.5 font-semibold"
+          style={{ color: labelColor }}
+        >
+          Social
+        </p>
+        <div className="px-5 flex gap-2">
+          {[
+            { Icon: FaFacebook, bg: "#1877f2" },
+            { Icon: FaTwitter, bg: "#1da1f2" },
+            { Icon: FaLinkedin, bg: "#0077b5" },
+            {
+              Icon: FaInstagram,
+              bg: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366)",
+            },
+          ].map(({ Icon, bg }, i) => (
+            <motion.a
+              key={i}
+              whileHover={{ y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 h-11 rounded-[13px] flex items-center justify-center text-white"
+              style={{ background: bg }}
+            >
+              <Icon size={15} />
+            </motion.a>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Save Button */}
-      <div className="px-6 mt-5">
-        <motion.button
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45, duration: 0.5 }}
+        className="px-5 mt-5"
+      >
+        <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm ${textBtnColor}`}
-          style={{
-            background:
-              btnColor ||
-              `linear-gradient(135deg, ${accentColor}, ${lightColor})`,
-          }}
+          className={`w-full flex items-center justify-center gap-2 py-4 rounded-[14px] font-bold text-sm cursor-pointer ${textBtnColor}`}
+          style={{ background: btnBackground }}
         >
-          <FaRegSave size={15} />
+          <FaRegSave size={14} />
           {formData?.select || "Save Contact"}
-        </motion.button>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

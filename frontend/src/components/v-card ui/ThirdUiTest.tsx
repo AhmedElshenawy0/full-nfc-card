@@ -1,16 +1,10 @@
-import {
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaPhone,
-  FaTwitter,
-} from "react-icons/fa";
-import { FiMapPin } from "react-icons/fi";
+import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FiMapPin, FiPhone } from "react-icons/fi";
+import { FaRegSave } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-// import { handleSaveContact } from "../../utils/contactFile";
-import { isDark } from "../../utils/colorBritness";
 import tinycolor from "tinycolor2";
+import { isDark } from "../../utils/colorBritness";
 
 const ThirdUITest = ({
   formData,
@@ -21,163 +15,264 @@ const ThirdUITest = ({
   tempMainBackground: any;
   tempButtonBackground: any;
 }) => {
-  // Default text and btn color
-  const [textColor, setTextColor] = useState("text-white");
   const [textBtnColor, setTextBtnColor] = useState("text-black");
 
+  const mainBg = tempMainBackground || formData?.mainBackground || "#0d1321";
+  const btnColor =
+    tempButtonBackground || formData?.buttonBackground || "#fbbf24";
+
+  const lightColor = tinycolor(mainBg).lighten(10).toHexString();
+  const gradientBg = `linear-gradient(to bottom right, #0d1321, ${mainBg}, #16202d)`;
+
+  const isMainDark = isDark(mainBg);
+  const textPrimary = isMainDark ? "#f1f5f9" : "#111111";
+  const textMuted = isMainDark ? "#475569" : "#9ca3af";
+  const textSecondary = isMainDark ? "#64748b" : "#6b7280";
+  const bioBorderColor = isMainDark
+    ? "rgba(255,255,255,0.1)"
+    : "rgba(0,0,0,0.08)";
+  const bioInnerDivider = isMainDark
+    ? "rgba(255,255,255,0.08)"
+    : "rgba(0,0,0,0.06)";
+  const bioBg = isMainDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)";
+  const rowBg = isMainDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)";
+  const rowBorder = isMainDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)";
+  const iconBg = isMainDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+  const arrowBg = isMainDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+  const badgeBg = isMainDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+  const badgeBorder = isMainDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.12)";
+  const badgeText = isMainDark ? "#94a3b8" : "#6b7280";
+
   useEffect(() => {
-    // check if color is dark Update text color
-
-    setTextColor(
-      tempMainBackground || formData?.mainBackground
-        ? isDark(tempMainBackground || formData?.mainBackground)
-          ? "text-white"
-          : "text-black"
-        : "text-white",
-    );
-    setTextBtnColor(
-      tempButtonBackground || formData?.buttonBackground
-        ? isDark(tempButtonBackground || formData?.buttonBackground)
-          ? "text-white"
-          : "text-black"
-        : "text-black",
-    );
-  }, [
-    tempMainBackground,
-    formData?.mainBackground,
-    tempButtonBackground,
-    formData?.buttonBackground,
-  ]);
-
-  const lightColor = tinycolor(
-    tempMainBackground ? tempMainBackground : "#0d1321",
-  )
-    .lighten(10)
-    .toHexString();
+    setTextBtnColor(isDark(btnColor) ? "text-white" : "text-black");
+  }, [btnColor]);
 
   return (
     <div
-      //   style={{ background: formData?.mainBackground }}
-      className={`min-h-screen max-w-lg mx-auto flex bg-black text-white p-6`}
+      style={{ background: gradientBg }}
+      className="w-full max-w-lg mx-auto min-h-screen overflow-hidden pb-8"
     >
+      {/* Hero image with overlay */}
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        style={{
-          backgroundImage:
-            formData?.mainBackground || tempMainBackground
-              ? `linear-gradient(to bottom right, #0d1321, ${
-                  formData?.mainBackground || tempMainBackground
-                }, #16202d)`
-              : "",
-          border: `1px solid ${lightColor}`,
-        }}
-        className={`w-full max-w-lg bg-gradient-to-br from-gray-900 via-black to-gray-800 shadow-2xl rounded-2xl overflow-hidden p-6 `}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative overflow-hidden"
       >
+        <img
+          src={formData?.image}
+          alt="Profile"
+          className="w-full h-56 object-cover object-top"
+        />
+        {/* gradient overlay */}
         <div
-          className="relative overflow-hidden rounded-lg"
-          style={{ border: `1px solid ${lightColor}` }}
-        >
-          <img
-            src={formData?.image}
-            alt="Profile"
-            className="w-full h-72 object-cover rounded-lg shadow-lg"
-          />
-          <div className="absolute -bottom-[15px] w-full bg-gradient-to-t from-black to-transparent p-6 text-center">
-            <h2 className={`${textColor} text-[23px] font-bold `}>
-              {formData?.name}
-            </h2>
-            <p className={`${textColor}  text-lg font-medium`}>
-              {formData.job}
-            </p>
-          </div>
-        </div>
-
-        <div className="p-6 text-center">
-          <p className={`${textColor} text-lg italic`}>{formData?.bio}</p>
-        </div>
-
-        {/* About Section */}
-        <div
+          className="absolute inset-0"
           style={{
-            border:
-              tempButtonBackground || formData?.buttonBackground
-                ? `1px solid ${
-                    tempButtonBackground || formData?.buttonBackground
-                  }`
-                : "",
-            backgroundColor: lightColor,
+            background: `linear-gradient(to top, ${mainBg} 20%, rgba(0,0,0,0.4) 60%, transparent 100%)`,
           }}
-          className="p-6 rounded-lg text-center mt-6 border border-gray-700"
-        >
-          <h3 className={`text-xl font-bold text-gold-500 mb-3 ${textColor}`}>
-            About
-          </h3>
-          <p className={`${textColor} leading-relaxed italic`}>
-            {formData?.about || "No additional information available."}
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center space-y-6 mt-6 gap-2">
-          <a
-            className={`flex items-center gap-3 ${textColor} text-lg font-semibold flex-col`}
+        />
+        {/* Name + badge bottom-left */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+          <h2
+            className="text-[22px] font-bold mb-2 leading-tight"
+            style={{ color: textPrimary }}
           >
-            <FaPhone className="text-2xl" /> {formData.phone}
-          </a>
-
-          <a
-            href={""}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex items-center gap-3 flex-col ${textColor}`}
-          >
-            <FiMapPin className="text-2xl text-gold-400" />{" "}
-            {formData?.address || "Location unavailable"}
-          </a>
-        </div>
-
-        <div className="flex justify-center space-x-10 mt-8">
-          <a
-            href="https://facebook.com"
-            className="text-blue-600 text-3xl hover:text-gold-500"
-          >
-            <FaFacebook />
-          </a>
-          <a
-            href="https://twitter.com"
-            className="text-blue-400 text-3xl hover:text-gold-500"
-          >
-            <FaTwitter />
-          </a>
-          <a
-            href="https://linkedin.com"
-            className="text-blue-700 text-3xl hover:text-gold-500"
-          >
-            <FaLinkedin />
-          </a>
-          <a
-            href="https://instagram.com"
-            className="text-pink-600 text-3xl hover:text-gold-500"
-          >
-            <FaInstagram />
-          </a>
-        </div>
-
-        <div className="p-6 mt-6">
-          <div
-            style={{
-              background:
-                formData?.buttonBackground || tempButtonBackground
-                  ? formData?.buttonBackground || tempButtonBackground
-                  : "",
-            }}
-            className={` text-center w-full py-3 ${textBtnColor} font-semibold text-lg rounded-lg shadow-xl transition transform hover:scale-105 bg-amber-400`}
-          >
-            {formData.select ? formData.select : "Save Contact"}
-          </div>
+            {formData?.name}
+          </h2>
+          {formData?.job && (
+            <span
+              className="text-[10px] px-3 py-1 rounded-full tracking-[0.1em] uppercase"
+              style={{
+                background: badgeBg,
+                border: `0.5px solid ${badgeBorder}`,
+                color: badgeText,
+              }}
+            >
+              {formData.job}
+            </span>
+          )}
         </div>
       </motion.div>
+
+      <div className="px-5 pt-4">
+        {/* Bio + About card */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="rounded-[14px] p-4 mb-3"
+          style={{ background: bioBg, border: `0.5px solid ${bioBorderColor}` }}
+        >
+          {formData?.bio && (
+            <p
+              className="text-sm italic leading-relaxed mb-2.5"
+              style={{ color: textPrimary }}
+            >
+              "{formData.bio}"
+            </p>
+          )}
+          {formData?.bio && formData?.about && (
+            <div
+              className="h-px mb-2.5"
+              style={{ background: bioInnerDivider }}
+            />
+          )}
+          {formData?.about && (
+            <p
+              className="text-[11px] leading-relaxed"
+              style={{ color: textSecondary }}
+            >
+              {formData.about}
+            </p>
+          )}
+        </motion.div>
+
+        {/* Contact */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.5 }}
+          className="mb-3"
+        >
+          <p
+            className="text-[10px] tracking-[0.13em] uppercase font-semibold mb-2.5"
+            style={{ color: textMuted }}
+          >
+            Contact
+          </p>
+          <div className="flex flex-col gap-2">
+            {/* Phone */}
+            <motion.a
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
+              href={`tel:+${formData?.phone}`}
+              className="flex items-center gap-3 px-3.5 py-3 rounded-[14px]"
+              style={{ background: rowBg, border: `0.5px solid ${rowBorder}` }}
+            >
+              <div
+                className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: iconBg }}
+              >
+                <FiPhone size={14} style={{ color: lightColor }} />
+              </div>
+              <div className="flex-1">
+                <p
+                  className="text-[10px] mb-0.5 tracking-[0.05em] uppercase"
+                  style={{ color: textMuted }}
+                >
+                  Phone
+                </p>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: textPrimary }}
+                >
+                  {formData?.phone}
+                </p>
+              </div>
+              <div
+                className="w-[26px] h-[26px] rounded-lg flex items-center justify-center text-sm"
+                style={{ background: arrowBg, color: textMuted }}
+              >
+                ›
+              </div>
+            </motion.a>
+
+            {/* Address */}
+            <motion.a
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
+              href=""
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-3.5 py-3 rounded-[14px]"
+              style={{ background: rowBg, border: `0.5px solid ${rowBorder}` }}
+            >
+              <div
+                className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: iconBg }}
+              >
+                <FiMapPin size={14} style={{ color: lightColor }} />
+              </div>
+              <div className="flex-1">
+                <p
+                  className="text-[10px] mb-0.5 tracking-[0.05em] uppercase"
+                  style={{ color: textMuted }}
+                >
+                  Address
+                </p>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: textPrimary }}
+                >
+                  View on map
+                </p>
+              </div>
+              <div
+                className="w-[26px] h-[26px] rounded-lg flex items-center justify-center text-sm"
+                style={{ background: arrowBg, color: textMuted }}
+              >
+                ›
+              </div>
+            </motion.a>
+          </div>
+        </motion.div>
+
+        {/* Social */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.5 }}
+          className="mb-4"
+        >
+          <p
+            className="text-[10px] tracking-[0.13em] uppercase font-semibold mb-2.5"
+            style={{ color: textMuted }}
+          >
+            Social
+          </p>
+          <div className="flex gap-2">
+            {[
+              { Icon: FaFacebook, bg: "#1877f2" },
+              { Icon: FaTwitter, bg: "#1da1f2" },
+              { Icon: FaLinkedin, bg: "#0077b5" },
+              {
+                Icon: FaInstagram,
+                bg: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366)",
+              },
+            ].map(({ Icon, bg }, i) => (
+              <motion.a
+                key={i}
+                whileHover={{ y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 h-11 rounded-[13px] flex items-center justify-center text-white"
+                style={{ background: bg }}
+              >
+                <Icon size={15} />
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Save Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45, duration: 0.5 }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className={`w-full flex items-center justify-center gap-2 py-4 rounded-[14px] font-bold text-sm cursor-pointer ${textBtnColor}`}
+            style={{ background: btnColor }}
+          >
+            <FaRegSave size={14} />
+            {formData?.select ? formData.select : "Save Contact"}
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 };

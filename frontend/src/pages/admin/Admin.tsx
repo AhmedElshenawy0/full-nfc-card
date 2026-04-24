@@ -12,6 +12,40 @@ import { Card } from "../../types/types";
 import Snipper from "../../components/global/Snipper";
 import { FiLogOut } from "react-icons/fi";
 
+import { useMotionValue, useSpring, useInView } from "framer-motion";
+import { useRef } from "react";
+
+type CountUpProps = {
+  value: number;
+  duration?: number;
+};
+
+export const CountUp = ({ value, duration = 1 }: CountUpProps) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+
+  const motionValue = useMotionValue(0);
+  const spring = useSpring(motionValue, {
+    duration: duration * 1000,
+  });
+
+  useEffect(() => {
+    if (isInView) {
+      motionValue.set(value);
+    }
+  }, [isInView, value, motionValue]);
+
+  useEffect(() => {
+    return spring.on("change", (latest) => {
+      if (ref.current) {
+        (ref.current as HTMLElement).textContent =
+          Math.floor(latest).toLocaleString();
+      }
+    });
+  }, [spring]);
+
+  return <span ref={ref}>0</span>;
+};
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const [
@@ -150,8 +184,7 @@ export const AdminDashboard = () => {
           }}
         />
 
-        {/* Stats — ✅ كان: text فقط بدون container
-                      ✅ بقى: cards شفافة bg-white/5 */}
+        {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {stats.map((stat, i) => (
             <motion.div
@@ -159,28 +192,65 @@ export const AdminDashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="rounded-xl p-3 text-center"
+              className="rounded p-3 text-center relative overflow-hidden"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "0.5px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.03)",
+                border: "0.5px solid rgba(255,255,255,0.07)",
                 backdropFilter: "blur(8px)",
               }}
             >
+              {/* glow blob */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: -10,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: stat.color,
+                  opacity: 0.08,
+                  filter: "blur(14px)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              {/* top accent line */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "20%",
+                  right: "20%",
+                  height: 1,
+                  borderRadius: 99,
+                  background: `linear-gradient(90deg, transparent, ${stat.color}, transparent)`,
+                  opacity: 0.5,
+                }}
+              />
+
               <p
-                className="text-[20px] font-medium mb-0.5"
-                style={{ color: stat.color }}
+                className="text-[22px] font-semibold mb-0.5 relative"
+                style={{
+                  color: stat.color,
+                  fontFamily: "'DM Mono', monospace",
+                  letterSpacing: "-0.5px",
+                }}
               >
-                {stat.value}
+                <CountUp value={stat.value} duration={0.8} />
               </p>
-              <p className="text-[10px] text-gray-500 tracking-wide">
+              <p
+                className="text-[9px] uppercase tracking-widest relative"
+                style={{ color: "rgba(255,255,255,0.25)" }}
+              >
                 {stat.label}
               </p>
             </motion.div>
           ))}
         </div>
 
-        {/* Nav Links — ✅ كان: bg-green-800 solid
-                        ✅ بقى: شفاف مع border */}
+        {/* Nav Links */}
         <div className="flex flex-col gap-2 mb-3">
           {navLinks.map((link, i) => (
             <motion.div
@@ -238,8 +308,7 @@ export const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Logout — ✅ كان: bg-red-900 solid
-                      ✅ بقى: شفاف مع border */}
+        {/* Logout */}
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -270,8 +339,7 @@ export const AdminDashboard = () => {
       </motion.div>
 
       {/* Logout Confirm Modal
-          ✅ كان: bg-white text-black — منفصل تماماً عن الـ theme
-          ✅ بقى: شفاف مع backdrop-blur — متناسق مع الـ layout
+    t
       */}
       <AnimatePresence>
         {showLogoutConfirm && (

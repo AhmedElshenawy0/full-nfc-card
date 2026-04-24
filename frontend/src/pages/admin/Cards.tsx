@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  useDeactivateCardMutation,
   useDeleteCardMutation,
   useGetAllCardsQuery,
 } from "../../store/apiSlice/CardSlice";
@@ -16,12 +17,12 @@ import {
   FiAlertTriangle,
   FiX,
   FiCreditCard,
-  FiDownload,
+  FiTrash,
 } from "react-icons/fi";
 import { FaUnlockAlt } from "react-icons/fa";
 import { createPortal } from "react-dom";
-import QRCodeStyling from "qr-code-styling";
 import QRWithImage from "../../components/global/QrCode";
+import { TiArrowBackOutline } from "react-icons/ti";
 
 // ─── tiny hover button ────────────────────────────────────────────────────────
 interface ActionBtnProps {
@@ -85,14 +86,16 @@ const ActionBtn = ({ onClick, icon, label, variant }: ActionBtnProps) => {
 };
 
 // ─── category pill ────────────────────────────────────────────────────────────
-const Pill = ({
+export const Pill = ({
   label,
   active,
   onClick,
+  icon,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  icon?: React.ReactNode;
 }) => {
   const [hov, setHov] = useState(false);
   const display =
@@ -103,7 +106,10 @@ const Pill = ({
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        padding: "7px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        padding: "7px 12px",
         borderRadius: 99,
         border: `0.5px solid ${active ? "rgba(74,222,128,0.4)" : "rgba(255,255,255,0.08)"}`,
         background: active
@@ -120,6 +126,7 @@ const Pill = ({
         whiteSpace: "nowrap",
       }}
     >
+      {icon && icon}
       {display}
     </button>
   );
@@ -129,14 +136,18 @@ const Pill = ({
 interface ConfirmModalProps {
   card: Card;
   isUnassigning: boolean;
+  isDeleting: boolean;
   onConfirm: () => void;
+  onDelete: () => void;
   onClose: () => void;
 }
 
 const ConfirmModal = ({
   card,
   isUnassigning,
+  isDeleting,
   onConfirm,
+  onDelete,
   onClose,
 }: ConfirmModalProps) =>
   createPortal(
@@ -208,7 +219,7 @@ const ConfirmModal = ({
                   fontFamily: "'Syne', sans-serif",
                 }}
               >
-                Deactivate Card
+                Manage Card
               </p>
               <p
                 style={{
@@ -252,11 +263,11 @@ const ConfirmModal = ({
               lineHeight: 1.6,
             }}
           >
-            This will disconnect{" "}
+            This will affect{" "}
             <span style={{ color: "#fff", fontWeight: 500 }}>
               {card.client?.first_name} {card.client?.last_name}
-            </span>{" "}
-            from this card.
+            </span>
+            's card.
           </p>
           <p
             style={{
@@ -265,16 +276,29 @@ const ConfirmModal = ({
               color: "rgba(255,255,255,0.3)",
             }}
           >
-            This action cannot be undone.
+            Deactivate keeps the card, delete removes it permanently.
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <ActionBtn
-              onClick={onConfirm}
-              variant="red"
-              icon={isUnassigning ? <BtnSnipper /> : <FaUnlockAlt size={12} />}
-              label={isUnassigning ? "Deactivating…" : "Yes, Deactivate"}
-            />
+            {/* row 1: deactivate + delete side by side */}
+            <div style={{ display: "flex", gap: 8 }}>
+              <ActionBtn
+                onClick={onConfirm}
+                variant="red"
+                icon={
+                  isUnassigning ? <BtnSnipper /> : <FaUnlockAlt size={12} />
+                }
+                label={isUnassigning ? "Deactivating…" : "Deactivate"}
+              />
+              <ActionBtn
+                onClick={onDelete}
+                variant="red"
+                icon={isDeleting ? <BtnSnipper /> : <FiTrash size={12} />}
+                label={isDeleting ? "Deleting…" : "Delete"}
+              />
+            </div>
+
+            {/* row 2: cancel full width */}
             <ActionBtn
               onClick={onClose}
               variant="green"
@@ -295,7 +319,6 @@ interface CardTileProps {
   onDeactivate: (card: Card) => void;
   onViewService: (card: Card) => void;
   onCopyLink: (card: Card) => void;
-  // remove onDownloadQr
 }
 
 const CardTile = ({
@@ -462,7 +485,7 @@ const CardTile = ({
             <ActionBtn
               onClick={() => onDeactivate(card)}
               icon={<FaUnlockAlt size={11} />}
-              label="Deactivate"
+              label="Manage"
               variant="red"
             />
           )}
@@ -529,24 +552,40 @@ const Cards = () => {
       );
   }, [data?.cards, selectedCategory]);
 
-  const [deleteCard, { isSuccess, isError, error, isLoading: isUnassigning }] =
-    useDeleteCardMutation();
+  const [
+    deactivateCard,
+    { isSuccess, isError, error, isLoading: isUnassigning },
+  ] = useDeactivateCardMutation();
 
-  const handleDeleteCard = async (card: Card) => {
+  const handleDeactivateCard = async (card: Card) => {
     if (!card?.client_id) {
       toast.error("Card has no assigned client.");
       return;
     }
     if (isUnassigning) return;
     try {
-      await deleteCard(card.unique_code).unwrap();
+      await deactivateCard(card.unique_code).unwrap();
       setShowModal(false);
     } catch {
       toast.error("Failed to deactivate card.");
     }
   };
 
+  const [deleteCard, { isSuccess: isDeleteSuccess, isLoading: isDeleting }] =
+    useDeleteCardMutation();
+
+  const handleDeleteCard = async (card: Card) => {
+    if (isDeleting) return;
+    try {
+      await deleteCard(card.unique_code).unwrap();
+      setShowModal(false);
+    } catch {
+      toast.error("Failed to delete card.");
+    }
+  };
+
   const customError = error as CustomError;
+
   useEffect(() => {
     if (isError)
       toast.error(
@@ -554,6 +593,10 @@ const Cards = () => {
       );
     else if (isSuccess) toast.success("Card deactivated successfully.");
   }, [isError, isSuccess, error]);
+
+  useEffect(() => {
+    if (isDeleteSuccess) toast.success("Card deleted successfully.");
+  }, [isDeleteSuccess]);
 
   const viewService = (card: Card) => {
     if (!card.client_id) {
@@ -580,10 +623,8 @@ const Cards = () => {
     success ? toast.success("Link copied!") : toast.error("Failed to copy");
   };
 
-  // ─── download QR ────────────────────────────────────────────────────────────
-  // ── circle-crop any image URL → base64 ──────────────────────────
-
   const activeCount = sortedCards.filter((c: Card) => c.client_id).length;
+  const navigate = useNavigate();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -624,15 +665,33 @@ const Cards = () => {
       </div>
 
       {/* ── category pills ── */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {categories.map((cat) => (
-          <Pill
-            key={cat}
-            label={cat}
-            active={selectedCategory === cat}
-            onClick={() => setSelectedCategory(cat)}
-          />
-        ))}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "nowrap",
+          gap: 8,
+          alignItems: "center",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+        }}
+        className="justify-between"
+      >
+        <div className="flex gap-2">
+          {categories.map((cat) => (
+            <Pill
+              key={cat}
+              label={cat}
+              active={selectedCategory === cat}
+              onClick={() => setSelectedCategory(cat)}
+            />
+          ))}
+        </div>
+        <Pill
+          label="Back"
+          active={false}
+          onClick={() => navigate(-1)}
+          icon={<TiArrowBackOutline size={14} />}
+        />
       </div>
 
       {/* ── grid ── */}
@@ -696,7 +755,9 @@ const Cards = () => {
           <ConfirmModal
             card={selectedCard}
             isUnassigning={isUnassigning}
-            onConfirm={() => handleDeleteCard(selectedCard)}
+            isDeleting={isDeleting}
+            onConfirm={() => handleDeactivateCard(selectedCard)}
+            onDelete={() => handleDeleteCard(selectedCard)}
             onClose={() => setShowModal(false)}
           />
         )}

@@ -30,18 +30,18 @@ const ChangeTheme = ({
         />
       ),
     },
-    // {
-    //   id: 2,
-    //   type: "secondUI",
-    //   label: "Theme 2",
-    //   component: (
-    //     <SecondUiTest
-    //       formData={dummyData[1]}
-    //       tempMainBackground={null}
-    //       tempButtonBackground={null}
-    //     />
-    //   ),
-    // },
+    {
+      id: 2,
+      type: "secondUI",
+      label: "Theme 2",
+      component: (
+        <SecondUiTest
+          formData={dummyData[1]}
+          tempMainBackground={null}
+          tempButtonBackground={null}
+        />
+      ),
+    },
     {
       id: 3,
       type: "thirdUI",
