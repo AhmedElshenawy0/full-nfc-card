@@ -251,10 +251,7 @@ const FirstUITest = ({
           whileTap={{ scale: 0.96 }}
           className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm cursor-pointer ${textBtnColor}`}
           style={{
-            background:
-              tempButtonBackground || formData?.buttonBackground
-                ? tempButtonBackground || formData?.buttonBackground
-                : `linear-gradient(135deg, #b45309, #fbbf24)`,
+            background: "white",
           }}
         >
           <FaRegSave size={15} />

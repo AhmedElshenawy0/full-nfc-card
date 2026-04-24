@@ -127,56 +127,94 @@ const FirstUI = ({ data }: { data: any }) => {
         <div className="grid grid-cols-2 gap-3 px-7">
           {/* Phone */}
           <motion.a
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{
+              scale: 1.04,
+              boxShadow: `0 10px 30px ${dimColor}`,
+            }}
+            whileTap={{ scale: 0.96 }}
             href={`tel:+${data?.phone}`}
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl"
+            className="relative flex flex-col items-center gap-2 p-4 rounded-2xl overflow-hidden"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: `0.5px solid ${borderColor}`,
+              background: "rgba(255,255,255,0.05)",
+              border: `1px solid ${borderColor}`,
+              backdropFilter: "blur(10px)",
             }}
           >
+            {/* glow effect */}
             <div
+              className="absolute top-[-20px] left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
+              style={{
+                background: lightColor,
+                opacity: 0.08,
+                filter: "blur(20px)",
+              }}
+            />
+
+            <motion.div
+              whileHover={{ rotate: 6, scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="w-11 h-11 rounded-xl flex items-center justify-center"
               style={{
                 background: dimColor,
-                border: `0.5px solid ${borderColor}`,
+                border: `1px solid ${borderColor}`,
               }}
             >
               <FaPhone style={{ color: lightColor, fontSize: 16 }} />
-            </div>
-            <span className="text-[11px] text-slate-500">Phone</span>
+            </motion.div>
+
+            <span className="text-[10px] uppercase tracking-widest text-gray-500">
+              Phone
+            </span>
+
             <span className={`text-sm font-medium text-center ${textColor}`}>
-              {data?.phone}
+              <span className="text-[11px] opacity-50">Call</span>
             </span>
           </motion.a>
 
           {/* Address */}
           <motion.a
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{
+              scale: 1.04,
+              boxShadow: `0 10px 30px ${dimColor}`,
+            }}
+            whileTap={{ scale: 0.96 }}
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl"
+            className="relative flex flex-col items-center gap-2 p-4 rounded-2xl overflow-hidden"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: `0.5px solid ${borderColor}`,
+              background: "rgba(255,255,255,0.05)",
+              border: `1px solid ${borderColor}`,
+              backdropFilter: "blur(10px)",
             }}
           >
+            {/* glow */}
             <div
+              className="absolute top-[-20px] left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
+              style={{
+                background: lightColor,
+                opacity: 0.08,
+                filter: "blur(20px)",
+              }}
+            />
+
+            <motion.div
+              whileHover={{ rotate: -6, scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="w-11 h-11 rounded-xl flex items-center justify-center"
               style={{
                 background: dimColor,
-                border: `0.5px solid ${borderColor}`,
+                border: `1px solid ${borderColor}`,
               }}
             >
               <FiMapPin style={{ color: lightColor, fontSize: 16 }} />
-            </div>
-            <span className="text-[11px] text-slate-500">Address</span>
-            <span className={`text-sm font-medium text-center ${textColor}`}>
-              View on map
+            </motion.div>
+
+            <span className="text-[10px] uppercase tracking-widest text-gray-500">
+              Address
             </span>
+
+            <span className="text-[11px] opacity-50">Open</span>
           </motion.a>
         </div>
       </motion.div>
@@ -232,9 +270,7 @@ const FirstUI = ({ data }: { data: any }) => {
           whileTap={{ scale: 0.96 }}
           className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium text-sm ${textBtnColor}`}
           style={{
-            background: data?.buttonBackground
-              ? data.buttonBackground
-              : `linear-gradient(135deg, #b45309, #fbbf24)`,
+            background: "white",
           }}
         >
           <FaRegSave size={15} />
