@@ -2,104 +2,12 @@ import { useSearchParams } from "react-router-dom";
 import "../../index.css";
 import { useGetOneSoldServicesQuery } from "../../store/apiSlice/Soldslice";
 import Snipper from "../../components/global/Snipper";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import { useSwipe } from "../../hooks/useSwipe";
 import HTMLFlipBook from "react-pageflip";
-
-// ─── Lightbox ─────────────────────────────────────────────────
-const Lightbox = ({ images, index, onClose }) => {
-  const swipe = useSwipe(
-    () => {}, // مش محتاج next هنا
-    () => {},
-  );
-
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  return createPortal(
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        background: "rgba(0,0,0,0.97)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      onTouchStart={swipe.onTouchStart}
-      onTouchEnd={swipe.onTouchEnd}
-    >
-      {/* top bar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "14px 16px",
-          background: "linear-gradient(to bottom,rgba(0,0,0,0.7),transparent)",
-          zIndex: 10002,
-        }}
-      >
-        {/* <span style={{ color: "#fff", fontSize: 12 }}>Flip Mode</span> */}
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
-          style={{ background: "none", border: "none", cursor: "pointer" }}
-        >
-          <FiX size={20} color="#fff" />
-        </button>
-      </div>
-
-      {/* ✅ Flipbook fullscreen */}
-      <div onClick={(e) => e.stopPropagation()}>
-        <HTMLFlipBook
-          width={width}
-          height={height}
-          size="stretch"
-          minWidth={300}
-          maxWidth={1000}
-          minHeight={400}
-          maxHeight={1500}
-          drawShadow
-          flippingTime={700}
-          startPage={index} // 🔥 يبدأ من الصورة اللي ضغطت عليها
-          useMouseEvents
-          mobileScrollSupport
-          showCover={false}
-        >
-          {images.map((src, i) => (
-            <div key={i} style={{ width: "100%", height: "100%" }}>
-              <img
-                src={src}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            </div>
-          ))}
-        </HTMLFlipBook>
-      </div>
-    </motion.div>,
-    document.body,
-  );
-};
 // ─── Flipbook ─────────────────────────────────────────────────
 const Flipbook = ({ images, onZoom, onFlip }) => {
   const width = Math.min(window.innerWidth * 0.9, 420);
@@ -118,6 +26,7 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
         <div
           key={i}
           style={{ position: "relative", width: "100%", height: "100%" }}
+          className=""
         >
           <img
             src={src}
@@ -125,7 +34,7 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "contain", // ← full image always visible
+              // objectFit: "", // ← full image always visible
               objectPosition: "center",
               backgroundColor: "#000", // fills empty space around it
               cursor: "zoom-in",
@@ -152,6 +61,87 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
         </div>
       ))}
     </HTMLFlipBook>
+  );
+};
+// ─── Lightbox ─────────────────────────────────────────────────
+const Lightbox = ({ images, index, onClose }) => {
+  const swipe = useSwipe(
+    () => {},
+    () => {},
+  );
+
+  const [dimensions, setDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () =>
+      setDimensions({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const { width, height } = dimensions;
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "#000",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "scroll",
+        // height: "100%",
+      }}
+      onTouchStart={swipe.onTouchStart}
+      onTouchEnd={swipe.onTouchEnd}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: "100vw", height: "100vh" }}
+      >
+        <HTMLFlipBook
+          width={width}
+          height={height}
+          size="stretch"
+          minWidth={300}
+          maxWidth={width}
+          minHeight={400}
+          maxHeight={height}
+          drawShadow={false}
+          flippingTime={700}
+          startPage={index}
+          useMouseEvents
+          mobileScrollSupport
+          showCover={false}
+          style={{ margin: 0, padding: 0 }}
+        >
+          {images.map((src, i) => (
+            <div key={i} style={{ width, height, overflow: "scroll" }}>
+              <img
+                src={src}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "block",
+                  // objectFit: "contain",
+                  background: "#000",
+                }}
+              />
+            </div>
+          ))}
+        </HTMLFlipBook>
+      </div>
+    </motion.div>,
+    document.body,
   );
 };
 
@@ -183,6 +173,7 @@ const MenuTemplate = () => {
         alignItems: "center",
         gap: 16,
       }}
+      className=""
     >
       {/* counter */}
       <div
@@ -231,11 +222,7 @@ const MenuTemplate = () => {
         </span>
       </div>
 
-      <Flipbook
-        images={images}
-        onZoom={setPreviewIndex}
-        onFlip={setCurrentPage} // ← pass flip handler
-      />
+      <Lightbox images={images} index={previewIndex} onClose={close} />
 
       <AnimatePresence>
         {previewIndex !== null && (
