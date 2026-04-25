@@ -263,7 +263,7 @@ const FourthUI = ({ data }: { data: any }) => {
           whileTap={{ scale: 0.97 }}
           onClick={() => handleSaveContact(data)}
           className={`w-full flex items-center justify-center gap-2 py-4 rounded-[14px] font-bold text-sm ${textBtnColor}`}
-          style={{ background: btnBackground }}
+          style={{ background: "#ffffff" }}
         >
           <FaRegSave size={14} />
           Save Contact

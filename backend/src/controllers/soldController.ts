@@ -14,7 +14,7 @@ import { validate as isUuid } from "uuid";
 export const getAllSoldServices = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const services = await prisma.service.findMany({
@@ -37,7 +37,7 @@ export const getAllSoldServices = async (
 export const getOneSoldService = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const id = req.params.id;
 
@@ -189,7 +189,7 @@ export const getOneSoldService = async (
 export const createSoldService = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   const { type, vCardUi, uniqueCode } = req.body;
 
@@ -274,8 +274,8 @@ export const createSoldService = async (
         files.files.map((file) =>
           cloudinary.v2.uploader.upload(file.path, {
             folder: "user_images/menu_images",
-          })
-        )
+          }),
+        ),
       );
       menuImageUrls = uploadResults.map((res) => res.secure_url);
 
@@ -345,7 +345,7 @@ export const createSoldService = async (
 export const updateSoldService = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   const id = req.params.id;
 
@@ -374,10 +374,16 @@ export const updateSoldService = async (
     let uploadedImageUrl = existingContent.image;
 
     if (files?.profileImage?.[0]) {
+      const oldImageUrl = existingContent.image;
+
       uploadedImageUrl = await uploadSingleImage(
         files.profileImage[0],
-        "user_images/vCard"
+        "user_images/vCard",
       );
+
+      if (oldImageUrl && oldImageUrl !== uploadedImageUrl) {
+        await deleteImagesFromCloudinary([oldImageUrl]);
+      }
     }
 
     const updatedData = {
@@ -415,7 +421,7 @@ export const updateSoldService = async (
 export const updateMenu = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   const id = req.params.id;
 
@@ -460,7 +466,7 @@ export const updateMenu = async (
     if (!isNoDelete) {
       await deleteImagesFromCloudinary(deletedImages);
       existingContent = existingContent.filter(
-        (url) => !deletedImages.includes(url)
+        (url) => !deletedImages.includes(url),
       );
     }
 
@@ -469,7 +475,7 @@ export const updateMenu = async (
     if (files?.files?.length) {
       newImageUrls = await uploadMultipleImages(
         files.files,
-        "user_images/menu_images"
+        "user_images/menu_images",
       );
     }
     const finalImages = [...existingContent, ...newImageUrls];

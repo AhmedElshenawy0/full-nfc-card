@@ -288,7 +288,7 @@ const SecondUiTest = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm cursor-pointer ${textBtnColor}`}
-          style={{ background: btnColor }}
+          style={{ background: "white" }}
         >
           <FaRegSave size={14} />
           {formData?.select ? formData.select : "Save Contact"}
