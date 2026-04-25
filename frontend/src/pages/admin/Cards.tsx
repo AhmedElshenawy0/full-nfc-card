@@ -140,6 +140,7 @@ interface ConfirmModalProps {
   onConfirm: () => void;
   onDelete: () => void;
   onClose: () => void;
+  type: string;
 }
 
 const ConfirmModal = ({
@@ -149,6 +150,7 @@ const ConfirmModal = ({
   onConfirm,
   onDelete,
   onClose,
+  type,
 }: ConfirmModalProps) =>
   createPortal(
     <motion.div
@@ -254,59 +256,117 @@ const ConfirmModal = ({
         </div>
 
         {/* body */}
-        <div style={{ padding: "18px 18px 20px" }}>
-          <p
-            style={{
-              margin: "0 0 6px",
-              fontSize: 13,
-              color: "rgba(255,255,255,0.7)",
-              lineHeight: 1.6,
-            }}
-          >
-            This will affect{" "}
-            <span style={{ color: "#fff", fontWeight: 500 }}>
-              {card.client?.first_name} {card.client?.last_name}
-            </span>
-            's card.
-          </p>
-          <p
-            style={{
-              margin: "0 0 20px",
-              fontSize: 12,
-              color: "rgba(255,255,255,0.3)",
-            }}
-          >
-            Deactivate keeps the card, delete removes it permanently.
-          </p>
+        {type === "manage" ? (
+          <div style={{ padding: "18px 18px 20px" }}>
+            <p
+              style={{
+                margin: "0 0 6px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.7)",
+                lineHeight: 1.6,
+              }}
+            >
+              You are about to deactivate or delete the card which is assigned
+              to{" "}
+              <span style={{ color: "#fff", fontWeight: 500 }}>
+                {card?.client?.first_name
+                  ? card?.client?.first_name
+                  : card?.unique_code}{" "}
+                {card.client?.last_name}{" "}
+              </span>
+            </p>
+            <p
+              style={{
+                margin: "0 0 20px",
+                fontSize: 12,
+                color: "rgba(255,255,255,0.3)",
+              }}
+            >
+              This action cannot be undone.
+            </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {/* row 1: deactivate + delete side by side */}
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {/* row 1: deactivate + delete side by side */}
+              <div style={{ display: "flex", gap: 8 }}>
+                <ActionBtn
+                  onClick={onConfirm}
+                  variant="red"
+                  icon={
+                    isUnassigning ? <BtnSnipper /> : <FaUnlockAlt size={12} />
+                  }
+                  label={isUnassigning ? "Deactivating…" : "Deactivate"}
+                />
+                <ActionBtn
+                  onClick={onDelete}
+                  variant="red"
+                  icon={isDeleting ? <BtnSnipper /> : <FiTrash size={12} />}
+                  label={isDeleting ? "Deleting…" : "Delete"}
+                />
+              </div>
+
+              {/* row 2: cancel full width */}
               <ActionBtn
-                onClick={onConfirm}
-                variant="red"
-                icon={
-                  isUnassigning ? <BtnSnipper /> : <FaUnlockAlt size={12} />
-                }
-                label={isUnassigning ? "Deactivating…" : "Deactivate"}
-              />
-              <ActionBtn
-                onClick={onDelete}
-                variant="red"
-                icon={isDeleting ? <BtnSnipper /> : <FiTrash size={12} />}
-                label={isDeleting ? "Deleting…" : "Delete"}
+                onClick={onClose}
+                variant="green"
+                icon={<FiX size={13} />}
+                label="Cancel"
               />
             </div>
-
-            {/* row 2: cancel full width */}
-            <ActionBtn
-              onClick={onClose}
-              variant="green"
-              icon={<FiX size={13} />}
-              label="Cancel"
-            />
           </div>
-        </div>
+        ) : type === "delete" ? (
+          <div style={{ padding: "18px 18px 20px" }}>
+            <p
+              style={{
+                margin: "0 0 6px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.7)",
+                lineHeight: 1.6,
+              }}
+            >
+              You are about to delete the card with id{" "}
+              <span style={{ color: "#fff", fontWeight: 500 }}>{card?.id}</span>
+            </p>
+            <p
+              style={{
+                margin: "0 0 20px",
+                fontSize: 12,
+                color: "rgba(255,255,255,0.3)",
+              }}
+            >
+              This action cannot be undone.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {/* row 1: deactivate + delete side by side */}
+              <div style={{ display: "flex", gap: 8 }}>
+                {/* <ActionBtn
+                  onClick={onConfirm}
+                  variant="red"
+                  icon={
+                    isUnassigning ? <BtnSnipper /> : <FaUnlockAlt size={12} />
+                  }
+                  label={isUnassigning ? "Deactivating…" : "Deactivate"}
+                /> */}
+                <ActionBtn
+                  onClick={onDelete}
+                  variant="red"
+                  icon={isDeleting ? <BtnSnipper /> : <FiTrash size={12} />}
+                  label={isDeleting ? "Deleting…" : "Delete"}
+                />
+              </div>
+
+              {/* row 2: cancel full width */}
+              <ActionBtn
+                onClick={onClose}
+                variant="green"
+                icon={<FiX size={13} />}
+                label="Cancel"
+              />
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
       </motion.div>
     </motion.div>,
     document.body,
@@ -491,19 +551,27 @@ const CardTile = ({
           )}
 
           {!hasClient && !hasService ? (
-            <>
-              <ActionBtn
-                onClick={() => onCopyLink(card)}
-                icon={<FiLink size={12} />}
-                label="Copy Link"
-                variant="blue"
-              />
-              <div style={{ flex: 1 }}>
-                <QRWithImage
-                  qrUrl={`https://signuptap.com/?unique_code=${card.unique_code}`}
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex gap-2">
+                <ActionBtn
+                  onClick={() => onCopyLink(card)}
+                  icon={<FiLink size={12} />}
+                  label="Copy Link"
+                  variant="blue"
                 />
+                <div style={{ flex: 1 }}>
+                  <QRWithImage
+                    qrUrl={`https://signuptap.com/?unique_code=${card.unique_code}`}
+                  />
+                </div>
               </div>
-            </>
+              <ActionBtn
+                onClick={() => onDeactivate(card)}
+                icon={<FaUnlockAlt size={11} />}
+                label="Delete"
+                variant="red"
+              />
+            </div>
           ) : (
             <ActionBtn
               onClick={() => onViewService(card)}
@@ -625,7 +693,6 @@ const Cards = () => {
 
   const activeCount = sortedCards.filter((c: Card) => c.client_id).length;
   const navigate = useNavigate();
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* ── header ── */}
@@ -759,6 +826,7 @@ const Cards = () => {
             onConfirm={() => handleDeactivateCard(selectedCard)}
             onDelete={() => handleDeleteCard(selectedCard)}
             onClose={() => setShowModal(false)}
+            type={selectedCard?.sold_service?.id ? "manage" : "delete"}
           />
         )}
       </AnimatePresence>

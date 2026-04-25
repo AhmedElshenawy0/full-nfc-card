@@ -15,7 +15,17 @@ a {
   position: relative;
   width: fit-content;
 }
-
+@keyframes bars {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
 .main-logo::before {
   content: "";
   position: absolute;

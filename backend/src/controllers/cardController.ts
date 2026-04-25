@@ -188,7 +188,9 @@ export const deactivateCard = async (
     await prisma.soldService.deleteMany({
       where: { card_id: card?.id },
     });
-
+    await prisma?.client?.delete({
+      where: { id: card?.client_id as string },
+    });
     await prisma.card.update({
       where: { unique_code },
       data: {

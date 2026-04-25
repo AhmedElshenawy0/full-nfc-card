@@ -26,7 +26,7 @@ export const cardSlice = createApi({
     }),
     deactivateCard: builder.mutation({
       query: (unique_code) => ({
-        url: `/deactivate${unique_code}`,
+        url: `/deactivate/${unique_code}`,
         method: "DELETE",
       }),
       invalidatesTags: ["cards"],

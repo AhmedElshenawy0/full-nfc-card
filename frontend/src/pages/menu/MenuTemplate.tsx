@@ -125,7 +125,9 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain", // ← full image always visible
+              objectPosition: "center",
+              backgroundColor: "#000", // fills empty space around it
               cursor: "zoom-in",
             }}
           />
