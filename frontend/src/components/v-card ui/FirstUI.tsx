@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { handleSaveContact } from "../../utils/contactFile";
 import tinycolor from "tinycolor2";
 import { isDark } from "../../utils/colorBritness";
+import { capitalizeFirstWord } from "./ThirdUI";
 
 const FirstUI = ({ data }: { data: any }) => {
   const encodedAddress = encodeURIComponent(data?.address || "");
@@ -73,11 +74,11 @@ const FirstUI = ({ data }: { data: any }) => {
                 borderColor,
               }}
             >
-              {data.job}
+              {capitalizeFirstWord(data.job)}
             </span>
           )}
           <h2 className={`text-2xl font-medium tracking-tight ${textColor}`}>
-            {data?.name}
+            {capitalizeFirstWord(data?.name)}
           </h2>
         </div>
       </motion.div>
@@ -93,13 +94,13 @@ const FirstUI = ({ data }: { data: any }) => {
           className="text-sm font-medium italic text-center leading-relaxed mb-2"
           style={{ color: lightColor }}
         >
-          "{data?.bio}"
+          "{capitalizeFirstWord(data?.bio)}"
         </p>
         <p
           className="text-xs text-center leading-relaxed"
           style={{ color: aboutColor }}
         >
-          {data?.about}
+          {capitalizeFirstWord(data?.about)}
         </p>
       </motion.div>
 

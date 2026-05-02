@@ -23,6 +23,8 @@ import {
   Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { FiArrowRight, FiZap } from "react-icons/fi";
+import BtnSnipper from "../../components/global/BtnSnipper";
 
 const { Title, Text } = Typography;
 
@@ -205,7 +207,7 @@ const CustomizeTemplate = () => {
       }}
     >
       <div
-        style={{ backgroundColor: "#0d0d10" }}
+        // style={{ backgroundColor: "#0d0d10" }}
         className="flex flex-col min-h-screen items-center px-4 py-10"
       >
         {/* Header */}
@@ -245,7 +247,13 @@ const CustomizeTemplate = () => {
           requiredMark={false}
         >
           {/* Profile Image */}
-          <Card style={{ marginBottom: 16, textAlign: "center" }}>
+          <Card
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              marginBottom: 16,
+              textAlign: "center",
+            }}
+          >
             <Upload
               showUploadList={false}
               beforeUpload={handleImageUpload}
@@ -293,7 +301,7 @@ const CustomizeTemplate = () => {
           {/* Personal Info */}
           <Card
             title={sectionLabel("Personal Info")}
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 16, background: "rgba(255,255,255,0.05)" }}
           >
             {[
               ["name", "Full Name"],
@@ -311,13 +319,23 @@ const CustomizeTemplate = () => {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, [key]: e.target.value }))
                   }
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "0.5px solid rgba(255,255,255,0.1)",
+                    borderRadius: 10,
+                    color: "#f0f0f0",
+                    padding: "10px 14px",
+                  }}
                 />
               </Form.Item>
             ))}
           </Card>
 
           {/* Contact */}
-          <Card title={sectionLabel("Contact")} style={{ marginBottom: 16 }}>
+          <Card
+            title={sectionLabel("Contact")}
+            style={{ marginBottom: 16, background: "rgba(255,255,255,0.05)" }}
+          >
             {[
               ["phone", "Phone Number"],
               ["address", "Address"],
@@ -332,6 +350,13 @@ const CustomizeTemplate = () => {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, [key]: e.target.value }))
                   }
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "0.5px solid rgba(255,255,255,0.1)",
+                    borderRadius: 10,
+                    color: "#f0f0f0",
+                    padding: "10px 14px",
+                  }}
                 />
               </Form.Item>
             ))}
@@ -340,7 +365,7 @@ const CustomizeTemplate = () => {
           {/* Social Links */}
           <Card
             title={sectionLabel("Social Links")}
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 16, background: "rgba(255,255,255,0.05)" }}
           >
             {[
               ["facebook_link", "Facebook"],
@@ -357,13 +382,23 @@ const CustomizeTemplate = () => {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, [key]: e.target.value }))
                   }
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "0.5px solid rgba(255,255,255,0.1)",
+                    borderRadius: 10,
+                    color: "#f0f0f0",
+                    padding: "10px 14px",
+                  }}
                 />
               </Form.Item>
             ))}
           </Card>
 
           {/* Appearance */}
-          <Card title={sectionLabel("Appearance")} style={{ marginBottom: 16 }}>
+          <Card
+            title={sectionLabel("Appearance")}
+            style={{ marginBottom: 16, background: "rgba(255,255,255,0.05)" }}
+          >
             {/* Change Color */}
             {/* <Button
               type="default"
@@ -409,11 +444,14 @@ const CustomizeTemplate = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                background: "rgba(255,255,255,0.06)",
+                borderColor: "rgba(255,255,255,0.1)",
+                color: "#f0f0f0",
               }}
             >
               <span>✦ Change Theme</span>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <Text type="secondary" style={{ fontSize: 12 }}>
+                <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
                   {selectedTheme || response?.soldServices?.vCardUi}
                 </Text>
                 <FaCheck style={{ color: "#4ade80", fontSize: 12 }} />
@@ -425,22 +463,29 @@ const CustomizeTemplate = () => {
 
           {/* Submit */}
           <Form.Item>
-            <Button
-              htmlType="submit"
-              block
-              loading={isLoading}
+            <button
+              type="submit"
               style={{
-                height: 46,
-                background: "linear-gradient(to right, #15803d, #059669)",
-                borderColor: "transparent",
-                color: "#fff",
-                fontWeight: 600,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "13px 0",
+                borderRadius: 14,
+                border: "0.5px solid rgba(74,222,128,0.35)",
+                background: "rgba(20,83,45,0.4)",
+                color: "rgba(134,239,172,0.95)",
                 fontSize: 14,
-                borderRadius: 12,
+                fontWeight: 500,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: "pointer",
+                transition: "background 0.15s",
               }}
             >
-              {!isLoading && "Save Changes"}
-            </Button>
+              {!isLoading ? "Save Changes" : <BtnSnipper />}
+              <FiArrowRight size={14} />
+            </button>
           </Form.Item>
         </Form>
         {isColorOpen && (

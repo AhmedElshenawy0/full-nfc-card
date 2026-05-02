@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import tinycolor from "tinycolor2";
 import { handleSaveContact } from "../../utils/contactFile";
 import { isDark } from "../../utils/colorBritness";
+import { capitalizeFirstWord } from "./ThirdUI";
 
 const FourthUI = ({ data }: { data: any }) => {
   const encodedAddress = encodeURIComponent(data?.address || "");
@@ -72,7 +73,7 @@ const FourthUI = ({ data }: { data: any }) => {
 
         {/* Name */}
         <h2 className="text-[22px] font-semibold text-white tracking-tight mb-2">
-          {data?.name}
+          {capitalizeFirstWord(data?.name)}
         </h2>
 
         {/* Job badge */}
@@ -81,7 +82,7 @@ const FourthUI = ({ data }: { data: any }) => {
             className="text-[10px] px-3.5 py-1 rounded-full border tracking-[0.1em] uppercase"
             style={{ background: dimColor, borderColor, color: lightColor }}
           >
-            {data.job}
+            {capitalizeFirstWord(data.job)}
           </span>
         )}
       </motion.div>
@@ -110,7 +111,7 @@ const FourthUI = ({ data }: { data: any }) => {
             className="text-sm italic leading-relaxed mb-2.5"
             style={{ color: quoteColor }}
           >
-            "{data.bio}"
+            "{capitalizeFirstWord(data.bio)}"
           </p>
         )}
         {data?.bio && data?.about && (
@@ -126,7 +127,7 @@ const FourthUI = ({ data }: { data: any }) => {
             className="text-[11px] leading-relaxed"
             style={{ color: aboutColor }}
           >
-            {data.about}
+            {capitalizeFirstWord(data.about)}
           </p>
         )}
       </motion.div>
