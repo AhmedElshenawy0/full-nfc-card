@@ -120,19 +120,21 @@ const ThirdUI = ({ data }: { data: any }) => {
         style={{
           display: "flex",
           justifyContent: "center",
-          marginTop: -46,
+          marginTop: -70,
           position: "relative",
           zIndex: 2,
         }}
       >
         {data?.image ? (
           <img
+            className="rounded-full"
             src={data.image}
             alt={data?.name || "Profile"}
             style={{
-              width: 92,
-              height: 92,
-              borderRadius: "50%",
+              width: 150,
+              height: 150,
+              // borderRadius: "50%",
+
               border: `3px solid ${card}`,
               objectFit: "cover",
               display: "block",

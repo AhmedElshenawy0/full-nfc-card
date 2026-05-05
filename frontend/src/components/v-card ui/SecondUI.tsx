@@ -83,7 +83,7 @@ const SecondUI = ({ data }: { data: any }) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative w-full"
-        style={{ height: 340 }}
+        style={{ height: 400 }}
       >
         <img
           src={data?.image}
