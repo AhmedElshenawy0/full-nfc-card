@@ -161,24 +161,25 @@ export const SignIn = () => {
       searchParams.delete("error");
       setSearchParams(searchParams, { replace: true });
     }
+
+    // Only handle Google auth redirect
+    if (!isAuth) return;
     if (!isSuccess || !data?.user) return;
+
     if (data?.user?.role === "admin") {
       navigate("/admin-dashboard");
       return;
     }
-    if (isAuth) {
-      console.log("isAuth triggered");
-      console.log("isSuccess:", isSuccess);
-      console.log("data:", data);
-      const userCard = (data.user.soldServices ?? []).find(
-        (e: any) => e?.card_id === gCardId,
-      );
-      if (!userCard?.id) {
-        const base = gType === "file" ? "/file-template" : "/select-template";
-        navigate(`${base}?service-type=${gType}&uniqueCode=${gUniqueCode}`);
-      } else {
-        navigate("/client-dashboard");
-      }
+
+    const userCard = (data.user.soldServices ?? []).find(
+      (e: any) => e?.card_id === gCardId,
+    );
+
+    if (gType && gUniqueCode && !userCard?.id) {
+      const base = gType === "file" ? "/file-template" : "/select-template";
+      navigate(`${base}?service-type=${gType}&uniqueCode=${gUniqueCode}`);
+    } else {
+      navigate("/client-dashboard");
     }
   }, [queryError, gCardId, gType, isAuth, data?.user, isSuccess, gUniqueCode]);
 
