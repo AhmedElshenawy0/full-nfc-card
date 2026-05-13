@@ -194,28 +194,30 @@ export const SignIn = () => {
 
     try {
       const res = await checkUserRole(email).unwrap();
-      if (res?.client?.role !== "admin" && (!queryType || !cardId)) {
-        toast.error("There are no credentials for your card.", {
-          duration: 5000,
-        });
+      const isAdmin = res?.client?.role === "admin";
+
+      // Admin → go directly to admin dashboard
+      if (isAdmin) {
+        await signIn({ email, password, cardType: queryType, cardId }).unwrap();
+        navigate("/admin-dashboard");
         return;
       }
+
       const result = await signIn({
         email,
         password,
         cardType: queryType,
         cardId,
       }).unwrap();
+
       toast.success(result.message, { duration: 5000 });
       await refetchUserInfo();
-      const userCard = result?.user?.soldServices?.find(
-        (e: any) => e?.card_id === cardId,
-      );
-      if (result?.user?.role === "admin") {
-        navigate("/admin-dashboard");
-        return;
-      }
-      if (result?.user?.email) {
+
+      // Has uniqueCode and type in URL → new card flow
+      if (queryType && uniqueCode) {
+        const userCard = result?.user?.soldServices?.find(
+          (e: any) => e?.card_id === cardId,
+        );
         if (!userCard?.id) {
           const base =
             queryType === "file" ? "/file-template" : "/select-template";
@@ -225,7 +227,19 @@ export const SignIn = () => {
         } else {
           navigate("/client-dashboard");
         }
+        return;
       }
+
+      // No uniqueCode/type → check if user already has a service
+      if (result?.user?.soldServices?.length > 0) {
+        navigate("/client-dashboard");
+        return;
+      }
+
+      // No service and no card params
+      toast.error("There are no credentials for your card.", {
+        duration: 5000,
+      });
     } catch (err: any) {
       toast.error(err?.data?.message || "An error occurred", {
         duration: 5000,
