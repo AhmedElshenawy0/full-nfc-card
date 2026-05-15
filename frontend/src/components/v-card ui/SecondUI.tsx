@@ -1,11 +1,4 @@
-import { FaRegSave } from "react-icons/fa";
-import {
-  FiMapPin,
-  FiPhone,
-  FiBriefcase,
-  FiChevronRight,
-  FiExternalLink,
-} from "react-icons/fi";
+import { FiMapPin, FiPhone, FiExternalLink } from "react-icons/fi";
 import {
   FaFacebook,
   FaInstagram,
@@ -44,7 +37,6 @@ const SecondUI = ({ data }: { data: any }) => {
     setTextBtnColor(isDark(btnColor) ? "text-white" : "text-black");
   }, [btnColor]);
 
-  // Original field names from SecondUI, filtered to only show links that exist
   const socialLinks = [
     {
       Icon: FaFacebook,
@@ -83,7 +75,7 @@ const SecondUI = ({ data }: { data: any }) => {
       style={{ background: mainBg }}
       className="w-full max-w-[500px] mx-auto min-h-screen overflow-hidden pb-6 relative"
     >
-      {/* ── Hero: full-bleed photo with gradient overlay ── */}
+      {/* ── Hero ── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -106,327 +98,143 @@ const SecondUI = ({ data }: { data: any }) => {
           }}
         />
 
-        {/* Name + verified badge + bio overlaid on photo */}
+        {/* Name + job + verified badge + bio */}
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
-          <div className="flex items-center gap-2 mb-1">
-            <h2
-              className="text-2xl font-bold leading-tight"
-              style={{ color: "#ffffff" }}
-            >
-              {capitalizeFirstWord(data?.name)}
-            </h2>
-            {/* Verified badge */}
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
-              fill="none"
-              className="flex-shrink-0"
-            >
-              <circle cx="11" cy="11" r="11" fill="white" />
-              <circle cx="11" cy="11" r="9" fill="#1a73e8" />
-              <path
-                d="M7 11l3 3 5-5"
-                stroke="white"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+  {/* Name + verified badge */}
+  <div className="flex items-center gap-2 mb-1.5">
+    <h2
+      className="text-2xl font-bold leading-tight"
+      style={{ color: "#ffffff" }}
+    >
+      {capitalizeFirstWord(data?.name)}
+    </h2>
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none" className="flex-shrink-0">
+      <circle cx="11" cy="11" r="11" fill="white" />
+      <circle cx="11" cy="11" r="9" fill="#1a73e8" />
+      <path d="M7 11l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  </div>
 
-          {data?.bio && (
-            <p
-              className="text-xs leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.72)" }}
-            >
-              {capitalizeFirstWord(data.bio)}
-            </p>
-          )}
-        </div>
+  {/* Job pill */}
+  {data?.job && (
+    <div
+      className="inline-flex items-center gap-1.5 mb-2 px-2.5 py-1 rounded-full"
+      style={{
+        background: "rgba(255,255,255,0.1)",
+        border: "1px solid rgba(255,255,255,0.15)",
+      }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+        style={{ background: "#f0c040" }}
+      />
+      <span
+        className="text-[11px] font-semibold tracking-[0.03em]"
+        style={{ color: "rgba(255,255,255,0.85)" }}
+      >
+        {capitalizeFirstWord(data.job)}
+      </span>
+    </div>
+  )}
+
+  {/* Bio */}
+  {data?.bio && (
+    <p
+      className="text-[11px] leading-relaxed"
+      style={{ color: "rgba(255,255,255,0.6)" }}
+    >
+      {capitalizeFirstWord(data.bio)}
+    </p>
+  )}
+</div>
       </motion.div>
 
-      {/* ── Stats / Action Row ── */}
       {/* ── Action Row ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.45 }}
-        className="flex items-center px-3.5 py-3 gap-2.5"
-        style={{ borderBottom: `1px solid ${borderColor}` }}
-      >
-        {/* Call */}
-        <motion.a
-          href={`tel:+${data?.phone}`}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          className="flex items-center gap-2.5 flex-1 px-3.5 py-3 rounded-2xl relative overflow-hidden"
-          style={{ background: cardBg, border: `1px solid ${borderColor}` }}
-        >
-          {/* Live pulse dot */}
-          <span
-            className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full"
-            style={{
-              background: "#4caf80",
-              boxShadow: "0 0 0 3px rgba(76,175,128,0.2)",
-              animation: "pulse 2s infinite",
-            }}
-          />
+      {/* ── Action Row ── */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.15, duration: 0.45 }}
+  className="flex items-center px-3.5 py-2.5 gap-2.5"
+  style={{ borderBottom: `1px solid ${borderColor}` }}
+>
+  {/* Save Contact — takes most width */}
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.97 }}
+    onClick={() => handleSaveContact(data)}
+    className="flex items-center justify-center gap-2.5 flex-[3] px-4 py-2.5 rounded-[18px] relative overflow-hidden cursor-pointer"
+    style={{ background: btnColor }}
+  >
+    <div
+      className="absolute rounded-full"
+      style={{ width: 80, height: 80, background: "rgba(255,255,255,0.07)", top: -20, right: -20 }}
+    />
+    <div
+      className="absolute rounded-full"
+      style={{ width: 50, height: 50, background: "rgba(255,255,255,0.05)", bottom: -15, left: -10 }}
+    />
+    <svg
+      width="17" height="17" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      className={`relative z-10 ${textBtnColor}`}
+    >
+      <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+      <line x1="20" y1="8" x2="20" y2="14" />
+      <line x1="23" y1="11" x2="17" y2="11" />
+    </svg>
+    <p className={`text-sm font-bold relative z-10 ${textBtnColor}`}>
+      Save Contact
+    </p>
+  </motion.button>
 
-          {/* Icon with ring */}
-          <div className="relative flex-shrink-0">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: iconBg }}
-            >
-              <FiPhone size={15} style={{ color: "#4caf80" }} />
-            </div>
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                border: `1.5px solid ${borderColor}`,
-                inset: "-2px",
-                borderRadius: "50%",
-                position: "absolute",
-              }}
-            />
-          </div>
-
-          <div>
-            <p
-              className="text-sm font-semibold leading-tight"
-              style={{ color: textPrimary }}
-            >
-              Call
-            </p>
-            <p className="text-[10px]" style={{ color: textMuted }}>
-              {data?.phone || "—"}
-            </p>
-          </div>
-        </motion.a>
-
-        {/* Save Contact */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => handleSaveContact(data)}
-          className="flex flex-col items-center justify-center gap-1.5 flex-1 py-3.5 rounded-2xl relative overflow-hidden cursor-pointer"
-          style={{ background: btnColor }}
-        >
-          {/* Decorative circle */}
-          <div
-            className="absolute top-0 right-0 w-14 h-14 rounded-full"
-            style={{
-              background: "rgba(255,255,255,0.08)",
-              transform: "translate(25%, -25%)",
-            }}
-          />
-
-          <div className="flex items-center gap-1.5 relative z-10">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={textBtnColor}
-            >
-              <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="8.5" cy="7" r="4" />
-              <line x1="20" y1="8" x2="20" y2="14" />
-              <line x1="23" y1="11" x2="17" y2="11" />
-            </svg>
-            <span
-              className={`text-[12px] font-bold leading-tight ${textBtnColor}`}
-            >
-              Save Contact
-            </span>
-          </div>
-
-          <span
-            className="text-[9px] relative z-10"
-            style={{
-              color: isDark(btnColor)
-                ? "rgba(255,255,255,0.45)"
-                : "rgba(0,0,0,0.4)",
-            }}
-          >
-            Add to phonebook
-          </span>
-        </motion.button>
-      </motion.div>
-
-      {/* ── Info Card ── */}
-      {/* ── Info Card ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.45 }}
-        style={{
-          background: cardBg,
-          border: `1px solid ${borderColor}`,
-          borderRadius: 18,
-        }}
-        className="mx-3.5 mt-3 px-4 py-4"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <p
-            className="text-[9px] tracking-[0.14em] uppercase font-bold"
-            style={{ color: textMuted }}
-          >
-            Info
-          </p>
-          <span
-            className="text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded-full"
-            style={{
-              background: innerRowBg,
-              border: `1px solid ${borderColor}`,
-              color: textMuted,
-            }}
-          >
-            {[data?.job, data?.phone, data?.address].filter(Boolean).length}{" "}
-            fields
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {/* Job */}
-          {data?.job && (
-            <div
-              className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
-              style={{
-                background: innerRowBg,
-                border: `1px solid ${borderColor}`,
-              }}
-            >
-              <div
-                className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(192,128,32,0.12)" }}
-              >
-                <FiBriefcase size={15} style={{ color: "#c08020" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
-                  style={{ color: textMuted }}
-                >
-                  Job title
-                </p>
-                <p
-                  className="text-[13px] font-semibold truncate"
-                  style={{ color: textPrimary }}
-                >
-                  {capitalizeFirstWord(data.job)}
-                </p>
-              </div>
-              <FiChevronRight
-                size={14}
-                style={{ color: borderColor, flexShrink: 0 }}
-              />
-            </div>
-          )}
-
-          {/* Phone */}
-          <motion.a
-            whileHover={{ x: 2 }}
-            whileTap={{ scale: 0.98 }}
-            href={`tel:+${data?.phone}`}
-            className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
-            style={{
-              background: innerRowBg,
-              border: `1px solid ${borderColor}`,
-            }}
-          >
-            <div
-              className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(76,175,128,0.12)" }}
-            >
-              <FiPhone size={15} style={{ color: "#4caf80" }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
-                style={{ color: textMuted }}
-              >
-                Phone
-              </p>
-              <p
-                className="text-[13px] font-semibold truncate"
-                style={{ color: textPrimary }}
-              >
-                {data?.phone}
-              </p>
-            </div>
-            <FiChevronRight
-              size={14}
-              style={{ color: borderColor, flexShrink: 0 }}
-            />
-          </motion.a>
-
-          {/* Address */}
-          <motion.a
-            whileHover={{ x: 2 }}
-            whileTap={{ scale: 0.98 }}
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
-            style={{
-              background: innerRowBg,
-              border: `1px solid ${borderColor}`,
-            }}
-          >
-            <div
-              className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(91,140,245,0.12)" }}
-            >
-              <FiMapPin size={15} style={{ color: "#5b8cf5" }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
-                style={{ color: textMuted }}
-              >
-                Location
-              </p>
-              <p
-                className="text-[13px] font-semibold"
-                style={{ color: "#5b8cf5" }}
-              >
-                View on map
-              </p>
-            </div>
-            <FiExternalLink
-              size={13}
-              style={{ color: "#3a4a7a", flexShrink: 0 }}
-            />
-          </motion.a>
-        </div>
-      </motion.div>
+  {/* Call — icon only */}
+{/* Call — icon only */}
+<motion.a
+  href={`tel:+${data?.phone}`}
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="flex items-center justify-center flex-1 rounded-full"
+  style={{
+    background: cardBg,
+    border: `1px solid ${borderColor}`,
+    // aspectRatio: "1",
+    padding: "10px",
+  }}
+>
+  <FiPhone size={18} style={{ color: "#4caf80" }} />
+</motion.a>
+</motion.div>
 
       {/* ── About Card ── */}
       {data?.about && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.33, duration: 0.45 }}
+          transition={{ delay: 0.25, duration: 0.45 }}
           style={{
             background: cardBg,
             border: `1px solid ${borderColor}`,
             borderRadius: 18,
           }}
-          className="mx-3.5 mt-2.5 px-5 py-4"
+          className="mx-3.5 mt-3 px-5 py-4"
         >
-          <p
-            className="text-[9px] tracking-[0.14em] uppercase font-semibold mb-2"
-            style={{ color: textMuted }}
-          >
-            About
-          </p>
+          <div className="flex items-center justify-between mb-3">
+            <p
+              className="text-[9px] tracking-[0.14em] uppercase font-bold"
+              style={{ color: textMuted }}
+            >
+              About
+            </p>
+            <svg width="20" height="14" viewBox="0 0 20 14" fill="none">
+              <path
+                d="M0 14V8.4C0 3.733 2.667 1.067 8 0l1.2 1.8C6.133 2.6 4.467 4.067 4.2 6H8V14H0ZM12 14V8.4C12 3.733 14.667 1.067 20 0l1.2 1.8C18.133 2.6 16.467 4.067 16.2 6H20V14H12Z"
+                fill={borderColor}
+              />
+            </svg>
+          </div>
           <p
             className="text-xs leading-relaxed"
             style={{ color: textSecondary }}
@@ -436,7 +244,62 @@ const SecondUI = ({ data }: { data: any }) => {
         </motion.div>
       )}
 
-      {/* ── Social Card — original field names + .filter() logic, circular icons ── */}
+      {/* ── Location Card ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.33, duration: 0.45 }}
+        style={{
+          background: cardBg,
+          border: `1px solid ${borderColor}`,
+          borderRadius: 18,
+        }}
+        className="mx-3.5 mt-2.5 px-4 py-4"
+      >
+        <p
+          className="text-[9px] tracking-[0.14em] uppercase font-bold mb-3"
+          style={{ color: textMuted }}
+        >
+          Location
+        </p>
+
+        <motion.a
+          whileHover={{ x: 2 }}
+          whileTap={{ scale: 0.98 }}
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
+          style={{ background: innerRowBg, border: `1px solid ${borderColor}` }}
+        >
+          <div
+            className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(91,140,245,0.12)" }}
+          >
+            <FiMapPin size={15} style={{ color: "#5b8cf5" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
+              style={{ color: textMuted }}
+            >
+              Address
+            </p>
+            <p
+              className="text-[13px] font-semibold"
+              style={{ color: "#5b8cf5" }}
+            >
+              View on map
+            </p>
+          </div>
+          <FiExternalLink
+            size={13}
+            style={{ color: "#3a4a7a", flexShrink: 0 }}
+          />
+        </motion.a>
+      </motion.div>
+
+      {/* ── Social Card ── */}
       {socialLinks.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
