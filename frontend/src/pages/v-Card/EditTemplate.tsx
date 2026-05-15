@@ -19,12 +19,11 @@ import {
   theme,
   Typography,
   Card,
-  Row,
-  Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { FiArrowRight, FiZap } from "react-icons/fi";
+import { FiArrowRight } from "react-icons/fi";
 import BtnSnipper from "../../components/global/BtnSnipper";
+import { RiUploadCloudLine } from "react-icons/ri";
 
 const { Title, Text } = Typography;
 
@@ -46,6 +45,8 @@ const CustomizeTemplate = () => {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [backgroundImage, setBackgroundImage] = useState<File | null>(null); // ← added
+  const [bgPreview, setBgPreview] = useState<string | null>(null); // ← added
   const [isColorOpen, setIsColorOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [antForm] = Form.useForm();
@@ -56,6 +57,7 @@ const CustomizeTemplate = () => {
 
   const { data: response } = useGetOneSoldServicesQuery(service_Id);
   const vCardContent = response?.soldServices?.vCardupdatableContent;
+  const currentVCardUi = response?.soldServices?.vCardUi;
   const [selectedTheme, setTheme] = useState("");
 
   useEffect(() => {
@@ -77,6 +79,10 @@ const CustomizeTemplate = () => {
       setFormData(data);
       antForm.setFieldsValue(data);
       setImagePreview(vCardContent.image);
+      // ← set existing background image preview if exists
+      if (vCardContent.backgroundImage) {
+        setBgPreview(vCardContent.backgroundImage);
+      }
     }
   }, [vCardContent]);
 
@@ -85,6 +91,15 @@ const CustomizeTemplate = () => {
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
     return false;
+  };
+
+  // ← added
+  const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setBackgroundImage(file);
+      setBgPreview(URL.createObjectURL(file));
+    }
   };
 
   const [updateSoldService, { isError, error, isLoading }] =
@@ -107,6 +122,12 @@ const CustomizeTemplate = () => {
         formDataData.append("profileImage", imageFile);
       }
 
+      // ← added: only append background image for thirdUI
+      const activeUi = selectedTheme || currentVCardUi;
+      if (backgroundImage && activeUi === "thirdUI") {
+        formDataData.append("backgroundImage", backgroundImage);
+      }
+
       await updateSoldService({
         id: service_Id,
         data: formDataData,
@@ -127,8 +148,6 @@ const CustomizeTemplate = () => {
   const [tempButtonBackground, setTempButtonBackground] = useState(
     formData.buttonBackground,
   );
-  const [textColor, setTextColor] = useState("black");
-  const [btnColor, setBtnColor] = useState("black");
 
   useEffect(() => {
     if (isColorOpen) {
@@ -136,20 +155,6 @@ const CustomizeTemplate = () => {
       setTempButtonBackground(formData.buttonBackground);
     }
   }, [isColorOpen]);
-
-  useEffect(() => {
-    const isDark = (hex: string) => {
-      if (!hex) return false;
-      hex = hex.replace("#", "");
-      const r = parseInt(hex.substring(0, 2), 16);
-      const g = parseInt(hex.substring(2, 4), 16);
-      const b = parseInt(hex.substring(4, 6), 16);
-      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-      return brightness < 130;
-    };
-    setTextColor(isDark(tempMainBackground) ? "#fff" : "#000");
-    setBtnColor(isDark(tempButtonBackground) ? "#fff" : "#000");
-  }, [tempMainBackground, tempButtonBackground]);
 
   const customError = error as CustomError;
   useEffect(() => {
@@ -175,6 +180,8 @@ const CustomizeTemplate = () => {
       {text}
     </Text>
   );
+
+  const activeUi = selectedTheme || currentVCardUi;
 
   return (
     <ConfigProvider
@@ -206,10 +213,7 @@ const CustomizeTemplate = () => {
         },
       }}
     >
-      <div
-        // style={{ backgroundColor: "#0d0d10" }}
-        className="flex flex-col min-h-screen items-center px-4 py-10"
-      >
+      <div className="flex flex-col min-h-screen items-center px-4 py-10">
         {/* Header */}
         <div className="text-center mb-8">
           <Text
@@ -297,6 +301,46 @@ const CustomizeTemplate = () => {
               Click avatar to change · Max 3MB
             </Text>
           </Card>
+
+          {/* Background Image — only for thirdUI */}
+          {activeUi === "thirdUI" && (
+            <Card
+              title={sectionLabel("Background Image")}
+              style={{ marginBottom: 16, background: "rgba(255,255,255,0.05)" }}
+            >
+              <div
+                className="w-full h-32 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center cursor-pointer overflow-hidden"
+                style={{
+                  backgroundImage: bgPreview ? `url(${bgPreview})` : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                <label
+                  htmlFor="bgImageEdit"
+                  className="cursor-pointer flex flex-col items-center gap-1"
+                >
+                  <RiUploadCloudLine size={28} className="text-gray-400" />
+                  <span className="text-xs text-gray-400">
+                    {bgPreview ? "Change Background" : "Upload Background"}
+                  </span>
+                </label>
+              </div>
+              <input
+                id="bgImageEdit"
+                type="file"
+                accept="image/*"
+                onChange={handleBgUpload}
+                className="hidden"
+              />
+              <Text
+                type="secondary"
+                style={{ fontSize: 12, marginTop: 8, display: "block" }}
+              >
+                Max image size: 3MB
+              </Text>
+            </Card>
+          )}
 
           {/* Personal Info */}
           <Card
@@ -399,42 +443,6 @@ const CustomizeTemplate = () => {
             title={sectionLabel("Appearance")}
             style={{ marginBottom: 16, background: "rgba(255,255,255,0.05)" }}
           >
-            {/* Change Color */}
-            {/* <Button
-              type="default"
-              block
-              onClick={() => setIsColorOpen(true)}
-              style={{
-                height: 44,
-                marginBottom: 10,
-                background:
-                  "linear-gradient(to right, rgba(126,34,206,0.25), rgba(29,78,216,0.2))",
-                borderColor: "rgba(168,85,247,0.25)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>🎨 Change Colors</span>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Customize →
-              </Text>
-            </Button> */}
-
-            {/* {isColorOpen && (
-              <ChangeBgColor
-                tempMainBackground={tempMainBackground}
-                tempButtonBackground={tempButtonBackground}
-                setTempMainBackground={setTempMainBackground}
-                setTempButtonBackground={setTempButtonBackground}
-                setIsColorOpen={setIsColorOpen}
-                setFormData={setFormData}
-                formData={formData}
-                ui={response?.soldServices?.vCardUi}
-              />
-            )} */}
-
-            {/* Change Theme */}
             <Button
               type="default"
               block
@@ -452,14 +460,12 @@ const CustomizeTemplate = () => {
               <span>✦ Change Theme</span>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
-                  {selectedTheme || response?.soldServices?.vCardUi}
+                  {selectedTheme || currentVCardUi}
                 </Text>
                 <FaCheck style={{ color: "#4ade80", fontSize: 12 }} />
               </span>
             </Button>
           </Card>
-
-          {/* Color Preview */}
 
           {/* Submit */}
           <Form.Item>
@@ -488,6 +494,7 @@ const CustomizeTemplate = () => {
             </button>
           </Form.Item>
         </Form>
+
         {isColorOpen && (
           <ChangeBgColor
             tempMainBackground={tempMainBackground}

@@ -33,6 +33,7 @@ const upload = multer({ storage, limits: { fileSize: 3 * 1024 * 1024 } });
 const uploadMiddleware = upload.fields([
   { name: "files" },
   { name: "profileImage" },
+  { name: "backgroundImage" }, // ← ADD THIS
 ]);
 
 router

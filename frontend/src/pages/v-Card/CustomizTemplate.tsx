@@ -13,10 +13,12 @@ const CustomizeTemplate = () => {
 
   const service_type = searchParams.get("service-type");
   const v_card_ui = searchParams.get("v-card-ui");
-  // const mentionedUniqueCode = searchParams.get("uniqueCode");
+  console.log(v_card_ui);
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [backgroundImage, setBackgroundImage] = useState<File | null>(null); // ← added
+  const [bgPreview, setBgPreview] = useState<string | null>(null); // ← added
   const [uniqueCode, setUniqueCode] = useState<string>("");
 
   const [formData, setFormData] = useState({
@@ -45,6 +47,15 @@ const CustomizeTemplate = () => {
     }
   };
 
+  // ← added
+  const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setBackgroundImage(file);
+      setBgPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -60,6 +71,11 @@ const CustomizeTemplate = () => {
 
     if (profileImage) {
       form.append("profileImage", profileImage);
+    }
+
+    // ← added: only append background image for thirdUI
+    if (backgroundImage && v_card_ui === "thirdUI") {
+      form.append("backgroundImage", backgroundImage);
     }
 
     // Append all form fields
@@ -120,6 +136,41 @@ const CustomizeTemplate = () => {
           />
           <p className="mt-2 text-sm text-gray-500">Max image size: 3MB</p>
         </div>
+
+        {/* Background Image Upload — only for thirdUI */}
+        {v_card_ui === "thirdUI" && (
+          <div className="flex flex-col items-center gap-2">
+            <label className="block text-sm text-gray-400 self-start">
+              Background Image
+            </label>
+            <div
+              className="w-full h-32 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center cursor-pointer overflow-hidden relative"
+              style={{
+                backgroundImage: bgPreview ? `url(${bgPreview})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <label
+                htmlFor="bgImage"
+                className="cursor-pointer flex flex-col items-center gap-1"
+              >
+                <RiUploadCloudLine size={28} className="text-gray-400" />
+                <span className="text-xs text-gray-400">
+                  {bgPreview ? "Change Background" : "Upload Background"}
+                </span>
+              </label>
+            </div>
+            <input
+              id="bgImage"
+              type="file"
+              accept="image/*"
+              onChange={handleBgUpload}
+              className="hidden"
+            />
+            <p className="text-xs text-gray-500">Max image size: 3MB</p>
+          </div>
+        )}
 
         {/* All Text Fields */}
         {[
@@ -204,21 +255,6 @@ const CustomizeTemplate = () => {
             onChange={(e) => setUniqueCode(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
-          {/* <div className="flex items-center gap-2 mt-2">
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText(mentionedUniqueCode || "");
-                toast.success("Unique code copied!");
-              }}
-              className="text-sm px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-800 transition text-white"
-            >
-              Copy Code
-            </button>
-            <span className="text-xs text-gray-400">
-              Click to copy your unique code.
-            </span>
-          </div> */}
         </div>
 
         {/* Submit Button */}
@@ -234,286 +270,3 @@ const CustomizeTemplate = () => {
 };
 
 export default CustomizeTemplate;
-
-// import { useEffect, useState } from "react";
-// import { useNavigate, useSearchParams } from "react-router-dom";
-// import { RiUploadCloudLine } from "react-icons/ri";
-// import { useCreateSoldServiceMutation } from "../../store/apiSlice/Soldslice";
-// import toast from "react-hot-toast";
-// import { CustomError, V_card_data } from "../../types/types";
-// import BtnSnipper from "../../components/global/BtnSnipper";
-
-// const CustomizeTemplate = () => {
-//   const [formData, setFormData] = useState<V_card_data>({
-//     name: "",
-//     bio: "",
-//     job: "",
-//     about: "",
-//     image: "",
-//     phone: "",
-//     address: "",
-//     facebook_link: "",
-//     instgram_link: "",
-//     linkedin_link: "",
-//     mainBackground: "",
-//     buttonBackground: "",
-//   });
-//   const [imagePreview, setImagePreview] = useState<any>();
-//   const [uniqueCode, setUniqueCode] = useState<string>("");
-//   const [searchParams] = useSearchParams();
-
-//   //=> Get sevice type query
-//   const service_type = searchParams.get("service-type");
-//   //=> Get v-card type type query
-//   const v_card_ui = searchParams.get("v-card-ui");
-
-//   //=> Handle image upload
-//   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (e.target.files?.[0]) {
-//       const file = e.target.files[0];
-//       setImagePreview(URL.createObjectURL(file));
-
-//       const reader = new FileReader();
-//       reader.readAsDataURL(file);
-//       reader.onloadend = () => {
-//         setFormData((prev) => ({ ...prev, image: reader.result as string }));
-//       };
-//     }
-//   };
-
-//   //=> Handle create sold service
-//   const navigate = useNavigate();
-
-//   const [createSoldService, { isError, isSuccess, error, data, isLoading }] =
-//     useCreateSoldServiceMutation();
-
-//   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     console.log({
-//       type: service_type,
-//       content: formData,
-//       vCardUi: v_card_ui,
-//       uniqueCode,
-//     });
-
-//     try {
-//       const response = await createSoldService({
-//         type: service_type,
-//         content: formData,
-//         vCardUi: v_card_ui,
-//         uniqueCode,
-//       }).unwrap();
-
-//       console.log("Sending Data:", response.message);
-//     } catch (error) {
-//       console.log(`Error From Client Create Product ${error}`);
-//     }
-//   };
-
-//   // Check if there an error or success
-//   const customError = error as CustomError;
-
-//   useEffect(() => {
-//     if (isError && customError?.data?.message) {
-//       toast.error(customError.data.message);
-//       console.log(customError.data.message);
-//     } else if (isSuccess) {
-//       navigate(`/client-dashboard`);
-//     }
-//   }, [isError, isSuccess, error, data]);
-
-//   return (
-//     <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-black to-[#3a0d4e] text-gray-200 px-4 py-6">
-//       {/* Header */}
-//       <h1 className="text-2xl font-bold text-white mb-6">
-//         Customize Your Template
-//       </h1>
-
-//       {/* Form Container */}
-//       <form
-//         onSubmit={handleSubmit}
-//         className="w-full max-w-md p-6 rounded-lg shadow-lg space-y-6"
-//       >
-//         {/* Image URL Field */}
-//         <div className="relative flex flex-col items-center">
-//           {/* Profile Image */}
-//           <div className="relative w-32 h-32">
-//             <img
-//               src={imagePreview || formData?.image}
-//               alt="Profile Picture"
-//               className="w-full h-full object-top rounded-full object-cover border-4 border-gray-700 shadow-lg"
-//             />
-
-//             {/* Upload Button */}
-//             <label
-//               htmlFor="image"
-//               className="absolute bottom-1 right-1 bg-gray-800 p-2 rounded-full shadow-md hover:bg-gray-700 transition-all cursor-pointer"
-//             >
-//               <RiUploadCloudLine size={20} className="text-white" />
-//             </label>
-//           </div>
-
-//           {/* Hidden File Input */}
-//           <input
-//             id="image"
-//             type="file"
-//             accept="image/*"
-//             onChange={handleImageUpload}
-//             className="hidden"
-//           />
-//         </div>
-
-//         {/* Name Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">Name</label>
-//           <input
-//             type="text"
-//             value={formData.name}
-//             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* Job Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">Job</label>
-//           <input
-//             type="text"
-//             value={formData.job}
-//             onChange={(e) => setFormData({ ...formData, job: e.target.value })}
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* Bio Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">Bio</label>
-//           <input
-//             type="text"
-//             value={formData.bio}
-//             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* About Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">About</label>
-//           <input
-//             type="text"
-//             value={formData.about}
-//             onChange={(e) =>
-//               setFormData({ ...formData, about: e.target.value })
-//             }
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-
-//           {/* Character Counter */}
-//           <div className="text-sm mt-1 text-gray-400">
-//             Characters: {formData.about.length}/100
-//           </div>
-
-//           {/* Recommendation Message */}
-//           {formData.about.length < 100 && (
-//             <p className="text-yellow-400 text-xs mt-1">
-//               It's recommended to write at least 100 characters for a better
-//               description.
-//             </p>
-//           )}
-//         </div>
-
-//         {/* Phone Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">Phone</label>
-//           <input
-//             type="text"
-//             value={formData.phone}
-//             onChange={(e) =>
-//               setFormData({ ...formData, phone: e.target.value })
-//             }
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* Address Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">Address</label>
-//           <input
-//             type="text"
-//             value={formData.address}
-//             onChange={(e) =>
-//               setFormData({ ...formData, address: e.target.value })
-//             }
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* Facebook Link Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">
-//             Facebook Link
-//           </label>
-//           <input
-//             type="text"
-//             value={formData.facebook_link}
-//             onChange={(e) =>
-//               setFormData({ ...formData, facebook_link: e.target.value })
-//             }
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* Instgram Link Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">
-//             Instgram Link
-//           </label>
-//           <input
-//             type="text"
-//             value={formData.instgram_link}
-//             onChange={(e) =>
-//               setFormData({ ...formData, instgram_link: e.target.value })
-//             }
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-
-//         {/* Linkedin Link Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">
-//             Linkedin Link
-//           </label>
-//           <input
-//             type="text"
-//             value={formData.linkedin_link}
-//             onChange={(e) =>
-//               setFormData({ ...formData, linkedin_link: e.target.value })
-//             }
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-//         {/* Unique code Field */}
-//         <div>
-//           <label className="block text-sm text-gray-400 mb-2">
-//             Unique Code
-//           </label>
-//           <input
-//             type="text"
-//             value={uniqueCode}
-//             onChange={(e) => setUniqueCode(e.target.value)}
-//             className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-//           />
-//         </div>
-//         {/* Save Button */}
-//         <button
-//           type="submit"
-//           className="w-full px-4 py-2 cursor-pointer bg-green-800 text-gray-100 rounded-lg shadow-md hover:bg-green-900 transition"
-//         >
-//           {isLoading ? <BtnSnipper /> : "Save Changes"}
-//         </button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default CustomizeTemplate;

@@ -884,9 +884,9 @@ const RootLayout = () => {
               {signInLoading ? <BtnSnipper /> : "Sign In"}
             </motion.button>
 
-            <Divider />
+            {/* <Divider /> */}
 
-            <GoogleLoginButton type={null} cardId={null} uniqueCode={null} />
+            {/* <GoogleLoginButton type={null} cardId={null} uniqueCode={null} /> */}
           </motion.div>
         )}
       </AnimatePresence>

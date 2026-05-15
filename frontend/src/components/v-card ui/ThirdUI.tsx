@@ -91,9 +91,9 @@ const ThirdUI = ({ data }: { data: any }) => {
           position: "relative",
         }}
       >
-        {data?.coverImage ? (
+        {data?.backgroundImage ? (
           <img
-            src={data.coverImage}
+            src={data.backgroundImage || ""}
             alt="cover"
             style={{
               width: "100%",
@@ -137,6 +137,7 @@ const ThirdUI = ({ data }: { data: any }) => {
 
               border: `3px solid ${card}`,
               objectFit: "cover",
+              objectPosition: "top",
               display: "block",
             }}
           />

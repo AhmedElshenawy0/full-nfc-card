@@ -1,5 +1,11 @@
 import { FaRegSave } from "react-icons/fa";
-import { FiMapPin, FiPhone, FiBriefcase } from "react-icons/fi";
+import {
+  FiMapPin,
+  FiPhone,
+  FiBriefcase,
+  FiChevronRight,
+  FiExternalLink,
+} from "react-icons/fi";
 import {
   FaFacebook,
   FaInstagram,
@@ -141,27 +147,54 @@ const SecondUI = ({ data }: { data: any }) => {
       </motion.div>
 
       {/* ── Stats / Action Row ── */}
+      {/* ── Action Row ── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.45 }}
-        className="flex items-center px-4 py-3 gap-2"
+        className="flex items-center px-3.5 py-3 gap-2.5"
         style={{ borderBottom: `1px solid ${borderColor}` }}
       >
-        {/* Call — tappable, uses original phone field */}
+        {/* Call */}
         <motion.a
           href={`tel:+${data?.phone}`}
-          className="flex items-center gap-2 flex-1"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className="flex items-center gap-2.5 flex-1 px-3.5 py-3 rounded-2xl relative overflow-hidden"
+          style={{ background: cardBg, border: `1px solid ${borderColor}` }}
         >
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: iconBg }}
-          >
-            <FiPhone size={14} style={{ color: textSecondary }} />
+          {/* Live pulse dot */}
+          <span
+            className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full"
+            style={{
+              background: "#4caf80",
+              boxShadow: "0 0 0 3px rgba(76,175,128,0.2)",
+              animation: "pulse 2s infinite",
+            }}
+          />
+
+          {/* Icon with ring */}
+          <div className="relative flex-shrink-0">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: iconBg }}
+            >
+              <FiPhone size={15} style={{ color: "#4caf80" }} />
+            </div>
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                border: `1.5px solid ${borderColor}`,
+                inset: "-2px",
+                borderRadius: "50%",
+                position: "absolute",
+              }}
+            />
           </div>
+
           <div>
             <p
-              className="text-sm font-bold leading-tight"
+              className="text-sm font-semibold leading-tight"
               style={{ color: textPrimary }}
             >
               Call
@@ -172,60 +205,61 @@ const SecondUI = ({ data }: { data: any }) => {
           </div>
         </motion.a>
 
-        {/* Divider */}
-        <div
-          className="w-px self-stretch"
-          style={{ background: borderColor, margin: "4px 8px" }}
-        />
-
-        {/* Add */}
-        <div className="flex items-center gap-2 flex-1">
+        {/* Save Contact */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => handleSaveContact(data)}
+          className="flex flex-col items-center justify-center gap-1.5 flex-1 py-3.5 rounded-2xl relative overflow-hidden cursor-pointer"
+          style={{ background: btnColor }}
+        >
+          {/* Decorative circle */}
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: iconBg }}
-          >
+            className="absolute top-0 right-0 w-14 h-14 rounded-full"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              transform: "translate(25%, -25%)",
+            }}
+          />
+
+          <div className="flex items-center gap-1.5 relative z-10">
             <svg
-              width="14"
-              height="14"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
               fill="none"
-              stroke={textSecondary}
+              stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className={textBtnColor}
             >
               <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
               <circle cx="8.5" cy="7" r="4" />
               <line x1="20" y1="8" x2="20" y2="14" />
               <line x1="23" y1="11" x2="17" y2="11" />
             </svg>
-          </div>
-          <div>
-            <p
-              className="text-sm font-bold leading-tight"
-              style={{ color: textPrimary }}
+            <span
+              className={`text-[12px] font-bold leading-tight ${textBtnColor}`}
             >
-              Add
-            </p>
-            <p className="text-[10px]" style={{ color: textMuted }}>
-              Save contact
-            </p>
+              Save Contact
+            </span>
           </div>
-        </div>
 
-        {/* Save Contact button — original handleSaveContact logic */}
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.96 }}
-          onClick={() => handleSaveContact(data)}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full font-semibold text-xs cursor-pointer flex-shrink-0 ${textBtnColor}`}
-          style={{ background: btnColor }}
-        >
-          <FaRegSave size={11} />
-          Save Contact
+          <span
+            className="text-[9px] relative z-10"
+            style={{
+              color: isDark(btnColor)
+                ? "rgba(255,255,255,0.45)"
+                : "rgba(0,0,0,0.4)",
+            }}
+          >
+            Add to phonebook
+          </span>
         </motion.button>
       </motion.div>
 
+      {/* ── Info Card ── */}
       {/* ── Info Card ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -236,105 +270,140 @@ const SecondUI = ({ data }: { data: any }) => {
           border: `1px solid ${borderColor}`,
           borderRadius: 18,
         }}
-        className="mx-3.5 mt-3 px-5 py-4"
+        className="mx-3.5 mt-3 px-4 py-4"
       >
-        <p
-          className="text-[9px] tracking-[0.14em] uppercase font-semibold mb-3"
-          style={{ color: textMuted }}
-        >
-          Info
-        </p>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <p
+            className="text-[9px] tracking-[0.14em] uppercase font-bold"
+            style={{ color: textMuted }}
+          >
+            Info
+          </p>
+          <span
+            className="text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded-full"
+            style={{
+              background: innerRowBg,
+              border: `1px solid ${borderColor}`,
+              color: textMuted,
+            }}
+          >
+            {[data?.job, data?.phone, data?.address].filter(Boolean).length}{" "}
+            fields
+          </span>
+        </div>
 
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           {/* Job */}
           {data?.job && (
             <div
-              className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
+              className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
               style={{
                 background: innerRowBg,
                 border: `1px solid ${borderColor}`,
               }}
             >
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: iconBg }}
+                className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: "rgba(192,128,32,0.12)" }}
               >
-                <FiBriefcase size={14} style={{ color: textSecondary }} />
+                <FiBriefcase size={15} style={{ color: "#c08020" }} />
               </div>
-              <div>
-                <p className="text-[10px] mb-0.5" style={{ color: textMuted }}>
-                  Job
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
+                  style={{ color: textMuted }}
+                >
+                  Job title
                 </p>
                 <p
-                  className="text-sm font-semibold"
+                  className="text-[13px] font-semibold truncate"
                   style={{ color: textPrimary }}
                 >
                   {capitalizeFirstWord(data.job)}
                 </p>
               </div>
+              <FiChevronRight
+                size={14}
+                style={{ color: borderColor, flexShrink: 0 }}
+              />
             </div>
           )}
 
           {/* Phone */}
           <motion.a
-            whileHover={{ x: 3 }}
+            whileHover={{ x: 2 }}
             whileTap={{ scale: 0.98 }}
             href={`tel:+${data?.phone}`}
-            className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
+            className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
             style={{
               background: innerRowBg,
               border: `1px solid ${borderColor}`,
             }}
           >
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: iconBg }}
+              className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(76,175,128,0.12)" }}
             >
-              <FiPhone size={14} style={{ color: textSecondary }} />
+              <FiPhone size={15} style={{ color: "#4caf80" }} />
             </div>
-            <div>
-              <p className="text-[10px] mb-0.5" style={{ color: textMuted }}>
+            <div className="flex-1 min-w-0">
+              <p
+                className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
+                style={{ color: textMuted }}
+              >
                 Phone
               </p>
               <p
-                className="text-sm font-semibold"
+                className="text-[13px] font-semibold truncate"
                 style={{ color: textPrimary }}
               >
                 {data?.phone}
               </p>
             </div>
+            <FiChevronRight
+              size={14}
+              style={{ color: borderColor, flexShrink: 0 }}
+            />
           </motion.a>
 
-          {/* Address — original mapsUrl logic */}
+          {/* Address */}
           <motion.a
-            whileHover={{ x: 3 }}
+            whileHover={{ x: 2 }}
             whileTap={{ scale: 0.98 }}
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
+            className="flex items-center gap-3 px-3 py-3 rounded-[13px]"
             style={{
               background: innerRowBg,
               border: `1px solid ${borderColor}`,
             }}
           >
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: iconBg }}
+              className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(91,140,245,0.12)" }}
             >
-              <FiMapPin size={14} style={{ color: textSecondary }} />
+              <FiMapPin size={15} style={{ color: "#5b8cf5" }} />
             </div>
-            <div>
-              <p className="text-[10px] mb-0.5" style={{ color: textMuted }}>
-                Address
+            <div className="flex-1 min-w-0">
+              <p
+                className="text-[9px] uppercase tracking-[0.06em] font-bold mb-0.5"
+                style={{ color: textMuted }}
+              >
+                Location
               </p>
               <p
-                className="text-sm font-semibold"
-                style={{ color: textPrimary }}
+                className="text-[13px] font-semibold"
+                style={{ color: "#5b8cf5" }}
               >
                 View on map
               </p>
             </div>
+            <FiExternalLink
+              size={13}
+              style={{ color: "#3a4a7a", flexShrink: 0 }}
+            />
           </motion.a>
         </div>
       </motion.div>

@@ -64,128 +64,6 @@ export const getOneSoldService = async (
 };
 
 //=> Create service
-// export const createSoldService = async (
-//   req: AuthenticatedRequest,
-//   res: Response
-// ) => {
-//   const { type, content, vCardUi, uniqueCode } = req.body;
-//   const body = req.body;
-//   console.log({ type, content, vCardUi, uniqueCode });
-
-//   if (!type || !content || !uniqueCode) {
-//     res.status(400).json({ message: "All fields are required" });
-//     console.log("err 1");
-//     return;
-//   }
-
-//   const service = await prisma.service.findFirst({
-//     where: { type: type },
-//   });
-
-//   if (!service?.id) {
-//     res.status(400).json({ message: "Missing service id" });
-//     console.log("err 2");
-//     return;
-//   }
-
-//   const card = await prisma.card.findFirst({
-//     where: { unique_code: uniqueCode },
-//     include: {
-//       sold_service: true,
-//     },
-//   });
-
-//   if (!card?.id) {
-//     res.status(400).json({ message: "Missing card id" });
-//     console.log("err 3");
-
-//     return;
-//   }
-
-//   const vCardContent = card?.sold_service?.vCardupdatableContent as unknown as {
-//     name?: string;
-//   };
-
-//   if (vCardContent?.name) {
-//     res.status(400).json({ message: "This card already has a service" });
-//     console.log("err 4");
-
-//     return;
-//   }
-
-//   const token = req.isAuthenticated();
-//   console.log(`here is token: ${token}`);
-//   console.log(req?.user);
-
-//   if (!token) {
-//     res
-//       .status(401)
-//       .json({ message: "Authentication token missing, Please Sign in" });
-//     return;
-//   }
-
-//   let user: any = req?.user;
-
-//   try {
-//     // Upload profile picture
-//     let profilePictureUrl = "";
-//     let menuImageUrls: string[] = [];
-//     let filePath = `/uploads/${req?.file?.filename}`;
-
-//     if (type === "vCard") {
-//       const uploadRes = await cloudinary.v2.uploader.upload(content?.image, {
-//         folder: "user_images/vCard",
-//       });
-//       profilePictureUrl = uploadRes.secure_url;
-//     } else if (type === "menu") {
-//       // Upload multiple menu images
-//       menuImageUrls = await Promise.all(
-//         content?.map(async (image: any) => {
-//           const uploadResponse = await cloudinary.v2.uploader.upload(image, {
-//             folder: "user_images/menu_images",
-//           });
-//           return uploadResponse.secure_url; // Store only the URL
-//         })
-//       );
-//     } else if (type === "file") {
-//       filePath = `/uploads/${req?.file?.filename}`;
-//     }
-
-//     console.log(`req is : ${req.file}`);
-//     console.log(`path name is : ${filePath}`);
-
-//     const newSoldService = await prisma.soldService.create({
-//       data: {
-//         client_id: user?.id,
-//         service_id: service.id,
-//         card_id: card.id,
-//         vCardUi: vCardUi,
-//         type,
-//         vCardupdatableContent:
-//           type === "vCard"
-//             ? { ...content, image: profilePictureUrl }
-//             : undefined,
-//         menuUpdatableContent: type === "menu" ? menuImageUrls : undefined,
-//         urlUpdatableContent: type === "url" ? content : undefined,
-//         fileUpdatableContent: type === "file" ? filePath : undefined,
-//       },
-//     });
-
-//     await prisma.card.update({
-//       where: { id: card?.id },
-//       data: {
-//         client_id: user?.id,
-//       },
-//     });
-
-//     res.status(201).json({ newSoldService });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Something went wrong while creating sold service",
-//       error,
-//     });
-//   }
-// };
 export const createSoldService = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -238,6 +116,7 @@ export const createSoldService = async (
 
   try {
     let profilePictureUrl = "";
+    let backgroundImageUrl = ""; // ← moved outside all blocks
     let menuImageUrls: string[] = [];
     let uploadedFilePath = "";
 
@@ -245,6 +124,7 @@ export const createSoldService = async (
     const files = req.files as {
       files?: Express.Multer.File[];
       profileImage?: Express.Multer.File[];
+      backgroundImage?: Express.Multer.File[];
       file?: Express.Multer.File[];
     };
 
@@ -265,6 +145,26 @@ export const createSoldService = async (
         }
       } else {
         console.warn("Profile image path does not exist:", imagePath);
+      }
+    }
+
+    // Upload vCard background image (for template 3)
+    if (type === "vCard" && files?.backgroundImage?.[0]) {
+      const bgPath = files.backgroundImage[0].path;
+
+      if (fs.existsSync(bgPath)) {
+        const uploadRes = await cloudinary.v2.uploader.upload(bgPath, {
+          folder: "user_images/vCard_backgrounds",
+        });
+        backgroundImageUrl = uploadRes.secure_url;
+
+        try {
+          await fs.promises.unlink(bgPath);
+        } catch (err) {
+          console.warn("Failed to delete background image:", bgPath);
+        }
+      } else {
+        console.warn("Background image path does not exist:", bgPath);
       }
     }
 
@@ -309,6 +209,7 @@ export const createSoldService = async (
       mainBackground: req.body.mainBackground,
       buttonBackground: req.body.buttonBackground,
       image: profilePictureUrl,
+      backgroundImage: backgroundImageUrl, // ← added
     };
     console.log("vCardContent", vCardContent);
 
@@ -369,8 +270,10 @@ export const updateSoldService = async (
 
     const files = req.files as {
       profileImage?: Express.Multer.File[];
+      backgroundImage?: Express.Multer.File[]; // ← added
     };
 
+    // Handle profile image
     let uploadedImageUrl = existingContent.image;
 
     if (files?.profileImage?.[0]) {
@@ -383,6 +286,22 @@ export const updateSoldService = async (
 
       if (oldImageUrl && oldImageUrl !== uploadedImageUrl) {
         await deleteImagesFromCloudinary([oldImageUrl]);
+      }
+    }
+
+    // Handle background image (for template 3)
+    let uploadedBgUrl = existingContent.backgroundImage || "";
+
+    if (files?.backgroundImage?.[0]) {
+      const oldBgUrl = existingContent.backgroundImage;
+
+      uploadedBgUrl = await uploadSingleImage(
+        files.backgroundImage[0],
+        "user_images/vCard_backgrounds",
+      );
+
+      if (oldBgUrl && oldBgUrl !== uploadedBgUrl) {
+        await deleteImagesFromCloudinary([oldBgUrl]);
       }
     }
 
@@ -400,6 +319,7 @@ export const updateSoldService = async (
       buttonBackground:
         req.body.buttonBackground || existingContent.buttonBackground,
       image: uploadedImageUrl,
+      backgroundImage: uploadedBgUrl, // ← added
     };
 
     const soldService = await prisma.soldService.update({

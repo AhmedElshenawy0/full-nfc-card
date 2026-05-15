@@ -347,14 +347,14 @@ export const SignIn = () => {
         </Link>
       </p>
 
-      <Divider />
+      {/* <Divider /> */}
 
       {/* google */}
-      <GoogleLoginButton
+      {/* <GoogleLoginButton
         type={queryType}
         cardId={cardId}
         uniqueCode={uniqueCode}
-      />
+      /> */}
     </motion.div>
   );
 };
