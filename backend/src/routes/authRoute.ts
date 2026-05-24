@@ -3,11 +3,13 @@ import express from "express";
 import {
   checkUserSoldService,
   deleteUser,
+  forgotPassword,
   getAllUsers,
   getSingleUser,
   getUserInfo,
   getUserRole,
   logOut,
+  resetPassword,
   updateUser,
   userLogin,
   userRegister,
@@ -93,6 +95,7 @@ router.get(
       sameSite: isProduction ? "none" : "lax",
       secure: isProduction,
     });
+
     res.cookie("uniqueCode", req.query.uniqueCode, {
       httpOnly: true,
       maxAge: 5 * 60 * 1000,
@@ -209,5 +212,8 @@ router.get("/me", (req, res) => {
 router.put("/update-client/:email", verifyAdmin, updateUser);
 
 router.delete("/delete-client/:email", verifyAdmin, deleteUser);
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

@@ -81,7 +81,6 @@ const Field = ({
             borderRadius: 12,
             border: `0.5px solid "rgba(167,139,250,0.45)"`,
             background: "rgba(88,28,135,0.1)",
-
             color: "rgba(255,255,255,0.85)",
             fontSize: 14,
             fontFamily: "'DM Sans', sans-serif",
@@ -171,11 +170,17 @@ export const SignIn = () => {
       return;
     }
 
+    // If no card params → go to dashboard directly
+    if (!gType || !gUniqueCode) {
+      navigate("/client-dashboard");
+      return;
+    }
+
     const userCard = (data.user.soldServices ?? []).find(
       (e: any) => e?.card_id === gCardId,
     );
 
-    if (gType && gUniqueCode && !userCard?.id) {
+    if (!userCard?.id) {
       const base = gType === "file" ? "/file-template" : "/select-template";
       navigate(`${base}?service-type=${gType}&uniqueCode=${gUniqueCode}`);
     } else {
@@ -299,6 +304,21 @@ export const SignIn = () => {
         />
       </div>
 
+      {/* forgot password link */}
+      <p style={{ margin: 0, textAlign: "right" }}>
+        <Link
+          to="/forgot-password"
+          style={{
+            color: "rgba(167,139,250,0.8)",
+            fontSize: 12,
+            textDecoration: "none",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Forgot password?
+        </Link>
+      </p>
+
       {/* submit */}
       <motion.button
         whileTap={{ scale: 0.97 }}
@@ -325,7 +345,7 @@ export const SignIn = () => {
         {isLoading ? <BtnSnipper /> : "Sign In"}
       </motion.button>
 
-      {/* link */}
+      {/* sign up link */}
       <p
         style={{
           margin: 0,
@@ -347,14 +367,13 @@ export const SignIn = () => {
         </Link>
       </p>
 
-      {/* <Divider /> */}
+      <Divider />
 
-      {/* google */}
-      {/* <GoogleLoginButton
+      <GoogleLoginButton
         type={queryType}
         cardId={cardId}
         uniqueCode={uniqueCode}
-      /> */}
+      />
     </motion.div>
   );
 };

@@ -62,3 +62,52 @@ export const sendVerificationEmail = async (
     throw new Error("Failed to send verification email");
   }
 };
+
+// ─── ADD THIS FUNCTION TO sendEmail.ts ───────────────────────────────────────
+
+export const sendResetPasswordEmail = async (email: string, token: string) => {
+  try {
+    const link = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+
+    await resend.emails.send({
+      from: "SignupTap <noreply@signuptap.com>",
+      to: email,
+      subject: "Reset your password",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background-color: #3a0d4e; padding: 40px 30px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); color: white;">
+  
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 28px; color: #ffffff;">🔑 Reset Password</h1>
+            <p style="font-size: 16px; color: #ccc; margin-top: 10px;">Click below to reset your password</p>
+          </div>
+
+          <p style="font-size: 16px; line-height: 1.6; color: #f1f1f1;">
+            Hello! 👋 <br/>
+            We received a request to reset your password. Click the button below to set a new password.
+          </p>
+
+          <div style="text-align: center; margin: 35px 0;">
+            <a href="${link}" style="background-color: #016630; color: #fff; padding: 16px 28px; font-size: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);">
+               Reset My Password
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #bbb; text-align: center;">
+            This link expires in 1 hour. Didn't request this? Just ignore this message.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #555; margin: 40px 0;" />
+
+          <p style="font-size: 12px; color: #888; text-align: center;">
+            © 2025 SignupTap. All rights reserved.
+          </p>
+        </div>
+      `,
+    });
+
+    console.log("✅ Reset password email sent.");
+  } catch (err) {
+    console.error("❌ Failed to send reset password email:", err);
+    throw new Error("Failed to send reset password email");
+  }
+};

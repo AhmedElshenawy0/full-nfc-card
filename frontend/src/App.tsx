@@ -25,6 +25,8 @@ import ErrorBoundary from "./components/global/ErrorBoundary";
 import ProtectAdminPage from "./components/auth/ProtectAdminPage";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import Deals from "./pages/Deals";
+import { ForgotPassword } from "./pages/auth/ForgetPassword";
+import { ResetPassword } from "./pages/auth/Resetpassword";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +38,8 @@ const router = createBrowserRouter([
       { path: "/signup", element: <Signup /> },
       { path: "/signin", element: <SignIn /> },
       { path: "/verify-email", element: <VerifyEmail /> },
+      { path: "/forgot-password", element: <ForgotPassword /> }, // ← ADD
+      { path: "/reset-password", element: <ResetPassword /> }, // ← ADD
       {
         path: "/select-template",
         element: (

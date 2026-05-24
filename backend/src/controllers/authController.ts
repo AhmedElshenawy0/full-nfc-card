@@ -5,13 +5,98 @@ import bcrypt from "bcryptjs";
 import { signInValidation, signUpValidation } from "../utils/validation";
 import { AuthenticatedRequest } from "../middleware/verifyJWT";
 import { validate as isUuid } from "uuid";
-import { sendVerificationEmail } from "../utils/sendEmail";
+import {
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from "../utils/sendEmail";
 import { v4 as uuidv4 } from "uuid";
 
+// ─── ADD THESE TWO FUNCTIONS TO authController.ts ───────────────────────────
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { email } = req.body;
+
+  if (!email) {
+    res.status(400).json({ message: "Email is required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.client.findUnique({ where: { email } });
+
+    if (!user) {
+      // Don't reveal if user exists or not
+      res
+        .status(200)
+        .json({ message: "If this email exists, a reset link has been sent." });
+      return;
+    }
+
+    const token = uuidv4();
+
+    await prisma.client.update({
+      where: { email },
+      data: { verificationToken: token },
+    });
+
+    await sendResetPasswordEmail(email, token);
+
+    res
+      .status(200)
+      .json({ message: "If this email exists, a reset link has been sent." });
+  } catch (err) {
+    const error = new Error(`❌ Error in forgot password`);
+    next(error);
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    res.status(400).json({ message: "Token and password are required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.client.findFirst({
+      where: { verificationToken: token },
+    });
+
+    if (!user) {
+      res.status(400).json({ message: "Invalid or expired reset token." });
+      return;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await prisma.client.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        verificationToken: null,
+      },
+    });
+
+    res.status(200).json({ message: "Password reset successfully." });
+  } catch (err) {
+    const error = new Error(`❌ Error in reset password`);
+    next(error);
+  }
+};
 export const userRegister = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   const body = req.body;
 
@@ -56,7 +141,7 @@ export const userRegister = async (
       newUser?.email,
       token,
       body?.cardType,
-      body?.cardId
+      body?.cardId,
     );
 
     res.status(201).json(newUser);
@@ -69,7 +154,7 @@ export const userRegister = async (
 export const userLogin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const body = req.body;
 
@@ -101,7 +186,7 @@ export const userLogin = async (
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_TOKEN_SECRET as string,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     res.cookie("jwt", token, {
@@ -123,7 +208,7 @@ export const userLogin = async (
 export const getSingleUser = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const userInfo = req?.user;
   if (!isUuid(userInfo?.id)) {
@@ -147,7 +232,7 @@ export const getSingleUser = async (
 export const getUserInfo = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const userInfo = req?.user;
 
@@ -175,7 +260,7 @@ export const getUserInfo = async (
 export const checkUserSoldService = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const body = req.body;
 
@@ -202,7 +287,7 @@ export const checkUserSoldService = async (
 export const logOut = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   res.clearCookie("jwt", { httpOnly: true, secure: true, sameSite: "strict" });
   res.status(200).json({ message: "Logged out successfully" });
@@ -211,7 +296,7 @@ export const logOut = async (
 export const getAllUsers = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const clients = await prisma.client.findMany({
@@ -236,7 +321,7 @@ export const getAllUsers = async (
 export const getUserRole = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { email } = req.params;
 
@@ -260,7 +345,7 @@ export const getUserRole = async (
 export const updateUser = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const params = req.params;
   const body = req.body;
@@ -303,7 +388,7 @@ export const updateUser = async (
 export const deleteUser = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const params = req.params;
 
@@ -336,7 +421,7 @@ export const deleteUser = async (
 export const verifyEmail = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { token, cardType, cardId } = req.query;
 

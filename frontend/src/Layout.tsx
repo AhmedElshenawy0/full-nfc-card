@@ -1,4 +1,5 @@
 import { useLocation, Outlet } from "react-router-dom";
+
 import logo from "/images/SignUp Logo White (1).png";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -254,7 +255,7 @@ const Layout = () => {
                   <img
                     src={logo}
                     alt="SignUp Logo"
-                    className="w-7 h-7 object-contain"
+                    className="w-8 h-8 object-contain"
                   />
                 </div>
               </motion.div>

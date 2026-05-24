@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useVerifyCardQuery } from "../store/apiSlice/CardSlice";
 import {
@@ -575,6 +575,7 @@ const RootLayout = () => {
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       style={{ width: "100%", maxWidth: 420, margin: "0 auto" }}
     >
+      jh
       <AnimatePresence mode="wait">
         {/* ── Choice view ── */}
         {view === "choice" && (
@@ -855,7 +856,19 @@ const RootLayout = () => {
                 }
               />
             </div>
-
+            <p style={{ margin: 0, textAlign: "right" }}>
+              <Link
+                to="/forgot-password"
+                style={{
+                  color: "rgba(167,139,250,0.8)",
+                  fontSize: 12,
+                  textDecoration: "none",
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Forgot password?
+              </Link>
+            </p>
             {/* sign in button */}
             <motion.button
               whileTap={{ scale: 0.97 }}
