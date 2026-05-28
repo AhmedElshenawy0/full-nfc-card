@@ -575,7 +575,6 @@ const RootLayout = () => {
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       style={{ width: "100%", maxWidth: 420, margin: "0 auto" }}
     >
-      jh
       <AnimatePresence mode="wait">
         {/* ── Choice view ── */}
         {view === "choice" && (
