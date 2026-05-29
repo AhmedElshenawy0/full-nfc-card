@@ -17,7 +17,7 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const width = Math.min(windowWidth * 0.9, 420);
+  const width = Math.min(windowWidth * 0.9, 500);
   const height = width * 1.414; // exact A4 portrait ratio
 
   return (
