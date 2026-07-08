@@ -37,7 +37,7 @@ export const ResetPassword = () => {
     try {
       await resetPassword({ token, password }).unwrap();
       toast.success("Password reset successfully!");
-      navigate("/signin");
+      navigate("/");
     } catch (err: any) {
       toast.error(err?.data?.message || "Something went wrong");
     }

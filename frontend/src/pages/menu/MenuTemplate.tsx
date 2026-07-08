@@ -3,15 +3,22 @@ import "../../index.css";
 import { useGetOneSoldServicesQuery } from "../../store/apiSlice/Soldslice";
 import Snipper from "../../components/global/Snipper";
 import { useState, useEffect } from "react";
-import { FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { useSwipe } from "../../hooks/useSwipe";
 import HTMLFlipBook from "react-pageflip";
+
 // ─── Flipbook ─────────────────────────────────────────────────
 const Flipbook = ({ images, onZoom, onFlip }) => {
-  const width = Math.min(window.innerWidth * 0.9, 420);
-  const height = width * 1.4;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const width = Math.min(windowWidth * 0.9, 500);
+  const height = width * 1.414; // exact A4 portrait ratio
 
   return (
     <HTMLFlipBook
@@ -26,7 +33,6 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
         <div
           key={i}
           style={{ position: "relative", width: "100%", height: "100%" }}
-          className=""
         >
           <img
             src={src}
@@ -34,19 +40,10 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
             style={{
               width: "100%",
               height: "100%",
-              // objectFit: "", // ← full image always visible
+              objectFit: "contain", // ← shows full image, no cropping
               objectPosition: "center",
-              backgroundColor: "#000", // fills empty space around it
+              backgroundColor: "#000",
               cursor: "zoom-in",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.6), transparent)",
             }}
           />
           <button
@@ -54,7 +51,17 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
               e.stopPropagation();
               onZoom(i);
             }}
-            style={{ position: "absolute", top: 10, right: 10 }}
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              background: "rgba(0,0,0,0.5)",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 16,
+              padding: "2px 6px",
+            }}
           >
             🔍
           </button>
@@ -63,13 +70,9 @@ const Flipbook = ({ images, onZoom, onFlip }) => {
     </HTMLFlipBook>
   );
 };
+
 // ─── Lightbox ─────────────────────────────────────────────────
 const Lightbox = ({ images, index, onClose }) => {
-  const swipe = useSwipe(
-    () => {},
-    () => {},
-  );
-
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -81,6 +84,9 @@ const Lightbox = ({ images, index, onClose }) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // guard: don't render if index is invalid
+  if (index === null || index === undefined) return null;
 
   const { width, height } = dimensions;
 
@@ -98,12 +104,31 @@ const Lightbox = ({ images, index, onClose }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "scroll",
-        // height: "100%",
       }}
-      onTouchStart={swipe.onTouchStart}
-      onTouchEnd={swipe.onTouchEnd}
     >
+      <button
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          top: 16,
+          right: 16,
+          zIndex: 10000,
+          background: "rgba(255,255,255,0.15)",
+          border: "none",
+          borderRadius: "50%",
+          width: 36,
+          height: 36,
+          fontSize: 18,
+          color: "#fff",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        ✕
+      </button>
+
       <div
         onClick={(e) => e.stopPropagation()}
         style={{ width: "100vw", height: "100vh" }}
@@ -118,22 +143,23 @@ const Lightbox = ({ images, index, onClose }) => {
           maxHeight={height}
           drawShadow={false}
           flippingTime={700}
-          startPage={index}
+          startPage={index} // ← safe because we guard null above
           useMouseEvents
           mobileScrollSupport
           showCover={false}
           style={{ margin: 0, padding: 0 }}
         >
           {images.map((src, i) => (
-            <div key={i} style={{ width, height, overflow: "scroll" }}>
+            <div key={i} style={{ width, height }}>
               <img
                 src={src}
                 style={{
                   width: "100%",
                   height: "100%",
-                  display: "block",
-                  // objectFit: "contain",
-                  background: "#000",
+                  objectFit: "fill",
+                  objectPosition: "center",
+                  backgroundColor: "#0a0a0c", // ← match your page background, not #000
+                  cursor: "zoom-in",
                 }}
               />
             </div>
@@ -149,16 +175,11 @@ const Lightbox = ({ images, index, onClose }) => {
 const MenuTemplate = () => {
   const [searchParams] = useSearchParams();
   const [previewIndex, setPreviewIndex] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0); // ← track current page
+  const [currentPage, setCurrentPage] = useState(0);
 
   const id = searchParams.get("id");
   const { data, isLoading } = useGetOneSoldServicesQuery(id);
   const images = data?.soldServices?.menuUpdatableContent ?? [];
-
-  const close = () => setPreviewIndex(null);
-  const prev = () =>
-    setPreviewIndex((i) => (i - 1 + images.length) % images.length);
-  const next = () => setPreviewIndex((i) => (i + 1) % images.length);
 
   if (isLoading) return <Snipper />;
 
@@ -173,9 +194,8 @@ const MenuTemplate = () => {
         alignItems: "center",
         gap: 16,
       }}
-      className=""
     >
-      {/* counter */}
+      {/* page counter */}
       <div
         style={{
           display: "flex",
@@ -222,11 +242,19 @@ const MenuTemplate = () => {
         </span>
       </div>
 
-      <Lightbox images={images} index={previewIndex} onClose={close} />
+      <Flipbook
+        images={images}
+        onZoom={setPreviewIndex}
+        onFlip={setCurrentPage}
+      />
 
       <AnimatePresence>
         {previewIndex !== null && (
-          <Lightbox images={images} index={previewIndex} onClose={close} />
+          <Lightbox
+            images={images}
+            index={previewIndex}
+            onClose={() => setPreviewIndex(null)}
+          />
         )}
       </AnimatePresence>
     </div>
