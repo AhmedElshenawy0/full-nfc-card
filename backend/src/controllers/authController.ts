@@ -20,16 +20,24 @@ export const forgotPassword = async (
 ) => {
   const { email } = req.body;
 
-  if (!email) {
+  const normalizedEmail =
+    typeof email === "string" ? email.trim().toLowerCase() : "";
+
+  if (!normalizedEmail) {
     res.status(400).json({ message: "Email is required" });
     return;
   }
 
   try {
-    const user = await prisma.client.findUnique({ where: { email } });
+    const user = await prisma.client.findFirst({
+      where: { email: { equals: normalizedEmail, mode: "insensitive" } },
+    });
 
     if (!user) {
       // Don't reveal if user exists or not
+      console.warn(
+        `Forgot password: no client found for ${normalizedEmail} — email not sent`,
+      );
       res
         .status(200)
         .json({ message: "If this email exists, a reset link has been sent." });
@@ -39,18 +47,18 @@ export const forgotPassword = async (
     const token = uuidv4();
 
     await prisma.client.update({
-      where: { email },
+      where: { id: user.id },
       data: { verificationToken: token },
     });
 
-    await sendResetPasswordEmail(email, token);
+    await sendResetPasswordEmail(user.email, token);
 
     res
       .status(200)
       .json({ message: "If this email exists, a reset link has been sent." });
   } catch (err) {
-    const error = new Error(`❌ Error in forgot password`);
-    next(error);
+    console.error("Forgot password failed:", err);
+    next(err);
   }
 };
 

@@ -1,6 +1,50 @@
+import "../loadEnv";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const DEFAULT_FROM = "SignupTap <noreply@signuptap.com>";
+
+let resendClient: Resend | null = null;
+
+function getResend(): Resend {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "RESEND_API_KEY is not set. Add it to backend/.env (https://resend.com/api-keys)",
+    );
+  }
+
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+
+  return resendClient;
+}
+
+function getFromAddress(): string {
+  return process.env.RESEND_FROM_EMAIL || DEFAULT_FROM;
+}
+
+async function sendWithResend(options: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<void> {
+  const { data, error } = await getResend().emails.send({
+    from: getFromAddress(),
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+  });
+
+  // Resend does not throw on API failures — it returns { error }
+  if (error) {
+    console.error("Resend API error:", error);
+    throw new Error(error.message || "Resend rejected the email");
+  }
+
+  console.log("Resend accepted email:", data?.id, "to:", options.to);
+}
 
 export const sendVerificationEmail = async (
   email: string,
@@ -16,12 +60,10 @@ export const sendVerificationEmail = async (
     console.log("email", email, link);
     console.log("card type and id", cardType, cardId);
 
-    await resend.emails
-      .send({
-        from: "SignupTap <noreply@signuptap.com>",
-        to: email,
-        subject: "Verify your email",
-        html: `
+    await sendWithResend({
+      to: email,
+      subject: "Verify your email",
+      html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background-color: #3a0d4e; padding: 40px 30px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); color: white;">
   
           <div style="text-align: center; margin-bottom: 30px;">
@@ -51,26 +93,22 @@ export const sendVerificationEmail = async (
           </p>
         </div>
       `,
-      })
-      .then((data) => {
-        console.log("Resend response:", data); // 👈 add this
-      });
+    });
 
     console.log("✅ Verification email sent.");
   } catch (err) {
     console.error("❌ Failed to send verification email:", err);
-    throw new Error("Failed to send verification email");
+    throw err instanceof Error
+      ? err
+      : new Error("Failed to send verification email");
   }
 };
-
-// ─── ADD THIS FUNCTION TO sendEmail.ts ───────────────────────────────────────
 
 export const sendResetPasswordEmail = async (email: string, token: string) => {
   try {
     const link = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
-    await resend.emails.send({
-      from: "SignupTap <noreply@signuptap.com>",
+    await sendWithResend({
       to: email,
       subject: "Reset your password",
       html: `
@@ -108,6 +146,8 @@ export const sendResetPasswordEmail = async (email: string, token: string) => {
     console.log("✅ Reset password email sent.");
   } catch (err) {
     console.error("❌ Failed to send reset password email:", err);
-    throw new Error("Failed to send reset password email");
+    throw err instanceof Error
+      ? err
+      : new Error("Failed to send reset password email");
   }
 };

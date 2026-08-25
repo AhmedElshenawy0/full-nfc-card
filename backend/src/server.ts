@@ -1,10 +1,10 @@
+import "./loadEnv";
 import express, {
   type Request,
   type Response,
   type NextFunction,
 } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import authRoute from "./routes/authRoute";
 import cardRoute from "./routes/cardRoute";
 import clientRoute from "./routes/clientRoute";
@@ -19,7 +19,6 @@ import { errorHandler } from "./middleware/ErrorHandler";
 import * as fs from "fs";
 import connectPg from "connect-pg-simple";
 import { Pool } from "pg";
-dotenv.config();
 
 const app = express();
 // HINT COMMENT
@@ -123,4 +122,9 @@ app.use(errorHandler as express.ErrorRequestHandler);
 //https.createServer(sslOptions, app).listen(port);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  if (!process.env.RESEND_API_KEY) {
+    console.warn(
+      "RESEND_API_KEY is missing — verification and reset emails will fail",
+    );
+  }
 });
