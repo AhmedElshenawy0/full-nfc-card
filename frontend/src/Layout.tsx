@@ -351,7 +351,14 @@ const Layout = () => {
             </motion.header>
           )}
 
-          <motion.main key={location.pathname} className="max-w-125 m-auto">
+          <motion.main
+            key={location.pathname}
+            className={
+              location.pathname === "/"
+                ? "max-w-6xl m-auto w-full"
+                : "max-w-125 m-auto"
+            }
+          >
             <Outlet />
           </motion.main>
 

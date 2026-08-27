@@ -27,6 +27,7 @@ import {
   FiChevronLeft,
 } from "react-icons/fi";
 import GoogleLoginButton from "../components/auth/GoogleBtn";
+import { HomeShowcase } from "../components/home/HomeShowcase";
 
 // ─── WhatsApp ─────────────────────────────────────────────────────────────────
 const WHATSAPP_NUMBER = "201002255129";
@@ -569,12 +570,13 @@ const RootLayout = () => {
 
   // ── Manual visit UI ──
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{ width: "100%", maxWidth: 420, margin: "0 auto" }}
-    >
+    <div style={{ width: "100%" }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        style={{ width: "100%", maxWidth: 420, margin: "0 auto" }}
+      >
       <AnimatePresence mode="wait">
         {/* ── Choice view ── */}
         {view === "choice" && (
@@ -902,7 +904,9 @@ const RootLayout = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+      </motion.div>
+      <HomeShowcase whatsappNumber={WHATSAPP_NUMBER} />
+    </div>
   );
 };
 

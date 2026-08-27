@@ -1,12 +1,11 @@
+import "../loadEnv";
 import bcrypt from "bcryptjs";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { PrismaClient, Client } from "@prisma/client";
-import dotenv from "dotenv";
 import { sendVerificationEmail } from "./sendEmail";
 import { v4 as uuidv4 } from "uuid";
-dotenv.config();
 
 const prisma = new PrismaClient();
 
@@ -33,53 +32,59 @@ passport.deserializeUser(
   },
 );
 
-// Google Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      callbackURL: `${process.env.CLIENT_URL}/api/auth/google/callback`,
-      passReqToCallback: true,
-    },
-    async (req, accessToken, refreshToken, profile, done) => {
-      try {
-        const email = profile.emails?.[0].value;
+// Google Strategy (skip locally if credentials are missing)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${process.env.CLIENT_URL}/api/auth/google/callback`,
+        passReqToCallback: true,
+      },
+      async (req, accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0].value;
 
-        if (!email) return done(null, false);
+          if (!email) return done(null, false);
 
-        const cardType = req.cookies.cardType;
-        const cardId = req.cookies.cardId;
+          const cardType = req.cookies.cardType;
+          const cardId = req.cookies.cardId;
 
-        let user = await prisma.client.findUnique({
-          where: { email },
-        });
-
-        if (!user) {
-          return done(null, false, { message: "User not found" });
-        }
-        if (!user?.emailVerified) {
-          const token = uuidv4();
-
-          await prisma.client.update({
-            where: { email: user.email },
-            data: { verificationToken: token },
+          let user = await prisma.client.findUnique({
+            where: { email },
           });
 
-          await sendVerificationEmail(user.email, token, cardType, cardId);
-          return done(null, false, {
-            message:
-              "Email not verified. A new verification email has been sent.",
-          });
-        }
+          if (!user) {
+            return done(null, false, { message: "User not found" });
+          }
+          if (!user?.emailVerified) {
+            const token = uuidv4();
 
-        return done(null, { ...user, isExist: true } as CustomUser);
-      } catch (error) {
-        return done(error, undefined);
-      }
-    },
-  ),
-);
+            await prisma.client.update({
+              where: { email: user.email },
+              data: { verificationToken: token },
+            });
+
+            await sendVerificationEmail(user.email, token, cardType, cardId);
+            return done(null, false, {
+              message:
+                "Email not verified. A new verification email has been sent.",
+            });
+          }
+
+          return done(null, { ...user, isExist: true } as CustomUser);
+        } catch (error) {
+          return done(error, undefined);
+        }
+      },
+    ),
+  );
+} else {
+  console.warn(
+    "GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are missing — Google login is disabled",
+  );
+}
 
 //Local Strategy
 passport.use(
